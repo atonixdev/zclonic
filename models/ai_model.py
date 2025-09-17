@@ -68,5 +68,42 @@ def chat(prompt: str, model: str = 'mock') -> str:
             return j['choices'][0]['message']['content'].strip()
         except Exception as e:
             return f"(AI error: {e})"
-    # Mock reply
-    return f"Echo: {prompt}"
+    # If no real model is configured, provide helpful rule-based troubleshooting responses
+    # Simple heuristics: look for keywords and return structured guidance
+    low = prompt.lower()
+    # Common categories
+    if any(k in low for k in ('error', 'traceback', 'exception', 'crash')):
+        return (
+            "It looks like you're seeing an error. Try these steps:\n"
+            "1) Read the full traceback to find the error type and file/line.\n"
+            "2) Search for the exact error message. Many issues are already reported.\n"
+            "3) Check recent changes — what code or dependency was updated?\n"
+            "4) Reproduce with a minimal test case and add logging around the failing area.\n"
+            "If you paste the exact error message I can give more targeted advice."
+        )
+    if any(k in low for k in ('how do i fix', 'how to fix', 'fix it', 'help')):
+        return (
+            "Here's a troubleshooting checklist: \n"
+            "- Confirm steps to reproduce the issue and the expected behavior.\n"
+            "- Check logs and tracebacks (server and client).\n"
+            "- Isolate the failure to a single component (frontend/backend/db).\n"
+            "- Try rolling back recent changes or run in a clean environment.\n"
+            "- If it's an import/module error, ensure dependencies are installed in the active venv.\n"
+            "If you give me the error text or the command you ran I can suggest exact commands."
+        )
+    if any(k in low for k in ('slow', 'performance', 'lag')):
+        return (
+            "Performance troubleshooting suggestions:\n"
+            "- Measure where time is spent (profilers for backend, devtools for frontend).\n"
+            "- Check database query times and add indexes where needed.\n"
+            "- Cache expensive computations and use pagination for large lists.\n"
+            "- For TTS/ML models, ensure batching and GPU use where possible.\n"
+        )
+    # Generic helpful response wrapping the prompt
+    return (
+        "I can help troubleshoot. Here are a few starter steps:\n"
+        "1) Share the exact command or action that caused the issue.\n"
+        "2) Copy the full error or describe the unexpected behavior.\n"
+        "3) Tell me what you have already tried.\n\n"
+        f"You asked: {prompt}\n\nIf you paste the error text or logs I will give prioritized steps to fix it."
+    )
