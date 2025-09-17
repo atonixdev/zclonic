@@ -5,6 +5,12 @@
     <h1>Operation Import history</h1>
     <p class="muted">Uploads and import logs.</p>
     <p>This is a placeholder page for import history.</p>
+    <hr>
+    <h3>Index a CSV for AI retrieval</h3>
+    <form action="{{ url_for('main.dashboard_index') }}" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".csv">
+      <button class="btn" type="submit">Upload & Index</button>
+    </form>
   </div>
 </div>
 {% endblock %}

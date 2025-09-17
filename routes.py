@@ -305,6 +305,28 @@ def dashboard_imports():
     return render_template('dashboard_imports.html')
 
 
+@main.route('/dashboard/index', methods=['GET', 'POST'])
+def dashboard_index():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_index')))
+    if request.method == 'POST':
+        f = request.files.get('file')
+        if not f:
+            flash('No file uploaded.', 'error')
+            return redirect(url_for('main.dashboard_imports'))
+        # save to temp
+        save_path = '/tmp/' + f.filename
+        f.save(save_path)
+        try:
+            from models.retriever import index_csv
+            n = index_csv(save_path)
+            flash(f'Indexed {n} chunks from {f.filename}', 'success')
+        except Exception as e:
+            flash('Indexing failed: ' + str(e), 'error')
+        return redirect(url_for('main.dashboard_imports'))
+    return redirect(url_for('main.dashboard_imports'))
+
+
 @main.route('/dashboard/group')
 def dashboard_group():
     if not _require_login():

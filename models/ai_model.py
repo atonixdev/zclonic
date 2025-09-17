@@ -11,6 +11,20 @@ def chat(prompt: str, model: str = 'mock') -> str:
     """
     import os
     key = os.environ.get('OPENAI_API_KEY')
+    # Try retrieval first (if available)
+    try:
+        from models.retriever import search as retriever_search
+        retrieved = retriever_search(prompt, k=5)
+    except Exception:
+        retrieved = []
+
+    # If we have retrieved context, prepend it to the prompt
+    if retrieved:
+        ctx = "\n\n--- Retrieved documents ---\n"
+        for r in retrieved:
+            ctx += f"Source (row={r.get('meta', {}).get('source_row')}): {r.get('text')}\n\n"
+        prompt = ctx + "\n\nUser question:\n" + prompt
+
     if key and model != 'mock':
         # Try calling OpenAI Chat Completions (simple implementation using requests)
         try:

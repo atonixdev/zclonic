@@ -27,3 +27,5 @@ python-magic
 black
 isort
 flake8
+sentence-transformers
+faiss-cpu
