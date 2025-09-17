@@ -1,35 +1,55 @@
 {% extends 'base.html' %}
 {% block content %}
     <div class="container">
-        <div class="card">
-            <h1>Welcome back{% if session.get('user_email') %}, {{ session.get('user_email').split('@')[0]|capitalize }}{% endif %}</h1>
-            <p class="muted">Quick actions and recent activity.</p>
+        <div class="row" style="align-items:flex-start">
+            <aside class="dashboard-sidebar" aria-label="Dashboard navigation" style="width:260px;flex:0 0 260px">
+                <nav>
+                    <ul class="sidebar-list" style="list-style:none;padding:0;margin:0">
+                        <li><a href="{{ url_for('main.dashboard_general') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_general') %}active{% endif %}">General</a></li>
+                        <li><a href="{{ url_for('main.dashboard_account') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_account') %}active{% endif %}">Account setting</a></li>
+                        <li><a href="{{ url_for('main.dashboard_notifications') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_notifications') %}active{% endif %}">Notifications</a></li>
+                        <li><a href="{{ url_for('main.dashboard_api') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_api') %}active{% endif %}">API</a></li>
+                        <li><a href="{{ url_for('main.dashboard_imports') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_imports') %}active{% endif %}">Operation Import history</a></li>
+                        <li><a href="{{ url_for('main.dashboard_group') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_group') %}active{% endif %}">Group</a></li>
+                        <li><a href="{{ url_for('main.dashboard_project') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_project') %}active{% endif %}">Project</a></li>
+                        <li><a href="{{ url_for('main.dashboard_environment') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_environment') %}active{% endif %}">Environment</a></li>
+                        <li><a href="{{ url_for('main.dashboard_security') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_security') %}active{% endif %}">Security</a></li>
+                    </ul>
+                </nav>
+            </aside>
 
-            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem">
-                <a class="btn btn-primary" href="{{ url_for('main.upload_get') }}">Upload data</a>
-                <a class="btn" href="{{ url_for('main.complete_profile') }}">Complete profile</a>
-                <a class="btn" href="{{ url_for('main.logout') }}">Logout</a>
-            </div>
+            <main style="flex:1;min-width:0">
+                <div class="card">
+                    <h1>Welcome back{% if session.get('user_email') %}, {{ session.get('user_email').split('@')[0]|capitalize }}{% endif %}</h1>
+                    <p class="muted">Quick actions and recent activity.</p>
 
-            <section style="margin-top:1.25rem">
-                <h2>Upload a Document</h2>
-                <form action="/upload" method="post" enctype="multipart/form-data">
-                        <input type="file" name="document">
-                        <button class="btn" type="submit">Process</button>
-                </form>
-            </section>
+                    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem">
+                        <a class="btn btn-primary" href="{{ url_for('main.upload_get') }}">Upload data</a>
+                        <a class="btn" href="{{ url_for('main.complete_profile') }}">Complete profile</a>
+                        <a class="btn" href="{{ url_for('main.logout') }}">Logout</a>
+                    </div>
 
-            {% if result %}
-            <div class="result" style="margin-top:1rem">
-                    <h3>AI Output:</h3>
-                    <p>{{ result }}</p>
-            </div>
-            {% endif %}
+                    <section style="margin-top:1.25rem">
+                        <h2>Upload a Document</h2>
+                        <form action="/upload" method="post" enctype="multipart/form-data">
+                                <input type="file" name="document">
+                                <button class="btn" type="submit">Process</button>
+                        </form>
+                    </section>
 
-            <section style="margin-top:1.5rem">
-                <h3>Recent activity</h3>
-                <div class="muted">No activity yet. Your uploads and analysis will appear here.</div>
-            </section>
+                    {% if result %}
+                    <div class="result" style="margin-top:1rem">
+                            <h3>AI Output:</h3>
+                            <p>{{ result }}</p>
+                    </div>
+                    {% endif %}
+
+                    <section style="margin-top:1.5rem">
+                        <h3>Recent activity</h3>
+                        <div class="muted">No activity yet. Your uploads and analysis will appear here.</div>
+                    </section>
+                </div>
+            </main>
         </div>
     </div>
 {% endblock %}

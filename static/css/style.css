@@ -219,6 +219,19 @@ body{
 .muted{color:var(--muted)}
 .row{display:flex;gap:1rem}
 
+/* Dashboard sidebar */
+.dashboard-sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border-radius:10px;padding:0.75rem;border:1px solid rgba(255,255,255,0.02)}
+.sidebar-list{display:flex;flex-direction:column;gap:0.25rem}
+.sidebar-link{display:block;padding:0.55rem 0.75rem;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:600}
+.sidebar-link:hover,.sidebar-link:focus{color:var(--text);background:rgba(255,255,255,0.02);transform:translateX(4px)}
+.sidebar-link.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;box-shadow:0 8px 20px rgba(124,92,255,0.06)}
+
+@media (max-width:900px){
+    .dashboard-sidebar{width:100%!important;flex:0 0 auto;margin-bottom:0.75rem;padding:0.5rem}
+    .sidebar-list{flex-direction:row;flex-wrap:wrap;gap:0.5rem}
+    .sidebar-link{padding:0.45rem 0.6rem;font-size:0.92rem}
+}
+
 /* Responsive */
 @media (max-width:900px){
         .nav-list{display:none}

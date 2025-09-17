@@ -19,6 +19,14 @@ def inject_globals():
     }
 
 @main.route('/')
+def home():
+    # Public landing page (keep product or marketing content)
+    # If you prefer the root to redirect to dashboard for logged-in users,
+    # we can change this to detect session and redirect.
+    return render_template('product.html')
+
+
+@main.route('/dashboard')
 def dashboard():
     # require login to view dashboard
     user_id = session.get('user_id')
@@ -53,16 +61,23 @@ def signup():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        confirm = request.form.get('confirm_password')
         if not email or not password:
             flash('Email and password are required.', 'error')
-            return render_template('signup.html')
+            return render_template('signup.html', email=email)
+        if confirm is None:
+            # older forms may not include confirm field
+            confirm = ''
+        if password != confirm:
+            flash('Passwords do not match. Please confirm your password.', 'error')
+            return render_template('signup.html', email=email)
         success = create_user(email, password)
         if success:
             flash('Account created. Please log in.', 'success')
             return redirect(url_for('main.login'))
         else:
             flash('Email already exists.', 'error')
-            return render_template('signup.html')
+            return render_template('signup.html', email=email)
     return render_template('signup.html')
 
 
@@ -245,6 +260,77 @@ def complete_profile():
         else:
             flash('Unable to update profile.', 'error')
     return render_template('complete_profile.html')
+
+
+def _require_login():
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access this page.', 'error')
+        return False
+    return True
+
+
+@main.route('/dashboard/general')
+def dashboard_general():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_general')))
+    return render_template('dashboard_general.html')
+
+
+@main.route('/dashboard/account')
+def dashboard_account():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_account')))
+    return render_template('dashboard_account.html')
+
+
+@main.route('/dashboard/notifications')
+def dashboard_notifications():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_notifications')))
+    return render_template('dashboard_notifications.html')
+
+
+@main.route('/dashboard/api')
+def dashboard_api():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_api')))
+    return render_template('dashboard_api.html')
+
+
+@main.route('/dashboard/imports')
+def dashboard_imports():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_imports')))
+    return render_template('dashboard_imports.html')
+
+
+@main.route('/dashboard/group')
+def dashboard_group():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_group')))
+    return render_template('dashboard_group.html')
+
+
+@main.route('/dashboard/project')
+def dashboard_project():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    return render_template('dashboard_project.html')
+
+
+@main.route('/dashboard/environment')
+def dashboard_environment():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_environment')))
+    return render_template('dashboard_environment.html')
+
+
+@main.route('/dashboard/security')
+def dashboard_security():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_security')))
+    return render_template('dashboard_security.html')
 
 
 @main.route('/api/chat', methods=['POST'])

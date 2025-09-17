@@ -139,4 +139,43 @@ document.addEventListener('DOMContentLoaded', function(){
       });
     });
   }
+
+  // Password visibility toggles
+  document.querySelectorAll('.toggle-password').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      var targetId = btn.getAttribute('data-target');
+      var input = document.getElementById(targetId);
+      if(!input) return;
+      if(input.type === 'password'){
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    });
+  });
+
+  // Signup confirm-password validation
+  var signupForm = document.querySelector('form[action="/signup"]');
+  if(signupForm){
+    signupForm.addEventListener('submit', function(e){
+      var pw = document.getElementById('password');
+      var cpw = document.getElementById('confirm_password');
+      // remove existing inline error
+      var existing = signupForm.querySelector('.pw-error');
+      if(existing) existing.remove();
+      if(pw && cpw && pw.value !== cpw.value){
+        e.preventDefault();
+        var err = document.createElement('div');
+        err.className = 'pw-error';
+        err.style.color = 'var(--accent-2)';
+        err.style.marginTop = '0.5rem';
+        err.textContent = 'Passwords do not match';
+        cpw.parentNode.appendChild(err);
+        cpw.focus();
+        return false;
+      }
+    });
+  }
 });

@@ -68,8 +68,8 @@
         </div>
     </header>
 
-        <!-- Hero (show only on dashboard) -->
-        {% if request.path == url_for('main.dashboard') %}
+    <!-- Hero (show only on public home/product pages) -->
+    {% if request.path == url_for('main.home') or request.path == url_for('main.product') %}
         <section class="hero">
             <div class="container full-width">
                 <span class="kicker" data-i18n="kicker">Enterprise</span>
