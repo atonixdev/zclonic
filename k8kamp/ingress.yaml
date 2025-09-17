@@ -5,9 +5,10 @@ metadata:
   namespace: zclonic
   annotations:
     kubernetes.io/ingress.class: nginx
+    # If using cert-manager add annotations here for TLS (e.g., cert-manager.io/cluster-issuer)
 spec:
   rules:
-  - host: example.com
+  - host: zclonic.com
     http:
       paths:
       - path: /
@@ -17,3 +18,7 @@ spec:
             name: zclonic-svc
             port:
               number: 80
+
+# Note: On bare-metal MetalLB provides external IPs to Services of type LoadBalancer.
+# The Ingress controller's Service (e.g., nginx-controller) should be type LoadBalancer and annotated
+# to use MetalLB's address pool so that the controller gets an IPv6 external address (then create AAAA DNS record).

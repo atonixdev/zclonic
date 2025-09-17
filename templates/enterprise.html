@@ -1,11 +1,51 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container">
-    <div class="card">
-      <h1>Enterprise</h1>
-      <p class="muted">Enterprise offerings: dedicated support, SLAs, on-prem deployment, and custom integrations.</p>
-      <p><a class="btn-signup" href="#">Contact sales</a></p>
+
+  <section class="enterprise-hero">
+    <div class="container">
+      <div class="enterprise-inner">
+        <div>
+          <h1>Enterprise solutions</h1>
+          <p class="lead">Dedicated deployments, SLAs, and custom integrations for mission-critical workloads.</p>
+          <p class="muted">On-prem, VPC peering, and advanced compliance support available.</p>
+          <div style="margin-top:1rem">
+            <a class="btn btn-primary" href="{{ url_for('main.contact') }}">Contact sales</a>
+            <a class="btn" href="{{ url_for('main.product') }}" style="margin-left:0.6rem">Product details</a>
+          </div>
+        </div>
+        <div class="enterprise-stats">
+          <div class="stat">
+            <strong>99.9%</strong>
+            <p class="muted">Uptime SLA</p>
+          </div>
+          <div class="stat">
+            <strong>24/7</strong>
+            <p class="muted">Support</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="enterprise-capabilities">
+    <div class="container">
+      <h2>Capabilities</h2>
+      <div class="grid">
+        <div class="cap-card">
+          <h3>On-prem & air-gapped</h3>
+          <p class="muted">Deploy within your network with our hardened installers and Terraform modules.</p>
+        </div>
+        <div class="cap-card">
+          <h3>Dedicated SLAs</h3>
+          <p class="muted">Custom uptime and support agreements for critical operations.</p>
+        </div>
+        <div class="cap-card">
+          <h3>Integrations</h3>
+          <p class="muted">Custom connectors, SAML/SSO, and data residency configurations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
 {% endblock %}

@@ -1,15 +1,39 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container">
-    <div class="card">
-      <h1>Pricing</h1>
-      <p class="muted">Flexible plans for individuals and teams. Contact sales for enterprise pricing.</p>
-      <ul>
-        <li>Free: 100 queries / month</li>
-        <li>Pro: $29 / month — unlimited queries</li>
-        <li>Team: $99 / month — shared workspace & billing</li>
-      </ul>
+
+  <section class="pricing-hero">
+    <div class="container">
+      <h1>Simple, predictable pricing</h1>
+      <p class="muted">Start free. Scale when you're ready — transparent pricing for individuals and teams.</p>
     </div>
-  </div>
+  </section>
+
+  <section class="pricing-grid">
+    <div class="container">
+      <div class="grid">
+        <div class="plan-card">
+          <div class="plan-badge">Free</div>
+          <h3>Free</h3>
+          <p class="muted">100 queries / month</p>
+          <a class="btn" href="#">Get started</a>
+        </div>
+
+        <div class="plan-card plan-popular">
+          <div class="plan-badge">Popular</div>
+          <h3>Pro</h3>
+          <p class="muted">$29 / month — unlimited queries</p>
+          <a class="btn btn-primary" href="#">Upgrade</a>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-badge">Team</div>
+          <h3>Team</h3>
+          <p class="muted">$99 / month — shared workspace & billing</p>
+          <a class="btn" href="#">Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 {% endblock %}

@@ -1,15 +1,90 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container">
-    <div class="card">
-      <h1>Product</h1>
-      <p class="muted">Overview of the Research AI Portal product, features, and roadmap.</p>
-      <ul>
-        <li>Document processing</li>
-        <li>Collaboration tools</li>
-        <li>Advanced analytics</li>
-      </ul>
+
+  <section class="product-hero">
+    <div class="container">
+      <div class="product-hero-inner">
+        <div class="product-hero-copy">
+          <span class="kicker">Product</span>
+          <h1>Research AI Portal — built for teams</h1>
+          <p class="lead">A secure, enterprise-ready platform to ingest, analyze and operationalize research data — with ML pipelines, role-based access, and easy integrations.</p>
+          <p class="muted">Trusted by engineering and research teams to accelerate insights and ship features faster.</p>
+          <div class="product-cta">
+            <a class="btn btn-primary" href="{{ url_for('main.signup') }}">Get Started — Free</a>
+            <a class="btn btn-secondary" href="{{ url_for('main.upload_get') }}">Try Upload</a>
+          </div>
+        </div>
+        <div class="product-hero-visual">
+          <div class="hero-panel">
+            <h4>Realtime Insights</h4>
+            <p class="muted">Batch & streaming pipelines, visualized.</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="product-features">
+    <div class="container">
+      <h2>Core features</h2>
+      <p class="muted">Everything you need to manage research data and build ML faster.</p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Document Intelligence</h3>
+          <p class="muted">Extract entities, summarize findings, and classify documents with customizable pipelines.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Collaboration & Governance</h3>
+          <p class="muted">Role-based access, audit logs, and sharing controls for regulated teams.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Integrations</h3>
+          <p class="muted">APIs, webhooks, and SDKs to connect with your data stack and CI/CD.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Enterprise Security</h3>
+          <p class="muted">SAML, encryption at rest and in transit, and VPC-friendly deployments.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="product-cases">
+    <div class="container">
+      <h2>Use cases</h2>
+      <div class="case-grid">
+        <div class="case-card">
+          <h4>Legal & Compliance</h4>
+          <p class="muted">Automate redaction, classification, and retention workflows.</p>
+        </div>
+        <div class="case-card">
+          <h4>Healthcare Research</h4>
+          <p class="muted">Aggregate study reports and surface clinical insights securely.</p>
+        </div>
+        <div class="case-card">
+          <h4>Market Intelligence</h4>
+          <p class="muted">Monitor signals across documents and news sources at scale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="product-cta-block">
+    <div class="container">
+      <div class="card card-cta">
+        <div class="row" style="align-items:center;justify-content:space-between">
+          <div>
+            <h3>Ready to try it?</h3>
+            <p class="muted">Sign up and upload a sample document to see the platform in action.</p>
+          </div>
+          <div>
+            <a class="btn btn-primary" href="{{ url_for('main.signup') }}">Create account</a>
+            <a class="btn" href="{{ url_for('main.contact') }}" style="margin-left:0.6rem">Talk to sales</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 {% endblock %}

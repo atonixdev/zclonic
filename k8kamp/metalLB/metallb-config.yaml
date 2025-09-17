@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: ipv6-pool
+      protocol: layer2
+      addresses:
+      - "fd00:1234::1000-fd00:1234::1fff"
+
+# Notes:
+# - Replace the fd00:1234::/48 ULA with an IPv6 range routable on your LAN.
+# - Use a stable, non-overlapping ULA in lab environments (fd00::/8 range).

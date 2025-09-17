@@ -1,11 +1,11 @@
-/* static/css/style.css - modern, professional style */
+
 
 :root{
-    --bg:#0f1724; /* very dark navy */
+    --bg:#0f1724; 
     --panel:#0b1220;
     --muted:#94a3b8;
-    --accent:#7c5cff; /* purple accent */
-    --accent-2:#00c2a8; /* teal accent */
+    --accent:#7c5cff;
+    --accent-2:#00c2a8;
     --surface:#0f1728;
     --card:#0c1320;
     --text:#e6eef8;
@@ -14,7 +14,6 @@
     --radius:10px;
 }
 
-/* Light theme overrides */
 body.theme-light{
     --bg:#f7fafc;
     --panel:#ffffff;
@@ -26,6 +25,8 @@ body.theme-light{
     --text:#0f1724;
     --glass: rgba(15,23,36,0.04);
 }
+
+
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -49,7 +50,9 @@ body{
 /* Full-width sections that ignore the page max width */
 .container.full-width{max-width:100%;padding:0 2rem}
 
-/* Header */
+/* Header (consolidated & polished)
+   Goals: consistent spacing, readable typography, centered nav, stable search placement,
+   clear action area on the right, and smooth responsive collapse. */
 .site-header{
     background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
     border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -57,39 +60,68 @@ body{
     top: 0;
     z-index: 1100;
     backdrop-filter: blur(6px);
+    padding:0.9rem 0; /* consistent header height */
 }
+
 .header-inner{
     display:flex;
     align-items:center;
-    justify-content:space-between;
+    justify-content:center; /* visually center the nav */
     gap:1rem;
-    padding:1.125rem 1rem; /* horizontal padding matches .container */
+    padding:0.9rem 1rem;
+    position:relative; /* for absolute logo/actions/search */
 }
+
+/* Brand (logo left) */
 .logo{
     display:inline-flex;
     align-items:center;
     gap:0.5rem;
-    margin-left:1rem;
     font-weight:800;
-    letter-spacing:0.6px;
-    font-size:0.95rem;
+    letter-spacing:0.4px;
+    font-size:1.125rem;
     color:var(--text);
     text-decoration:none;
+    position:absolute;left:1rem;top:50%;transform:translateY(-50%);
 }
 
-.logo img{width:40px;height:40px;border-radius:8px;display:block}
-.logo .brand{font-weight:800;color:var(--text)}
+.logo img{width:48px;height:48px;border-radius:8px;display:block}
+.logo .brand{font-weight:800;color:var(--text);font-size:1.05rem}
 
-/* Header layout - logo sits left and nav fills remaining space */
-.header-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.header-inner > .logo{margin-left:0}
-.logo{order:0;margin-right:1rem}
+/* Primary nav: centered list that flexes but has a sane max-width */
+.primary-nav{display:flex;align-items:center;justify-content:center;flex:1}
+.nav-list{display:flex;gap:1.5rem;margin:0;padding:0;list-style:none;max-width:60%;overflow:hidden;justify-content:center}
+.nav-list a{color:var(--muted);text-decoration:none;font-weight:600;padding:0.45rem 0.6rem;border-radius:8px;white-space:nowrap;display:inline-block;transition:color .12s ease,background .12s ease,transform .08s ease}
+.nav-list a:hover,.nav-list a:focus{color:var(--text);background:var(--glass);transform:translateY(-1px)}
+.nav-list a:focus{outline:2px solid rgba(124,92,255,0.12);outline-offset:3px}
 
-/* Mobile: hide brand text to keep header compact */
+.nav-list a.active{color:var(--text);background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 6px 16px rgba(124,92,255,0.08);padding:0.35rem 0.7rem}
+
+/* Search: anchored to the right of the centered nav, left of actions */
+.nav-search{position:absolute;right:11.5rem;top:50%;transform:translateY(-50%);transition:opacity .12s ease}
+.nav-search input{min-width:clamp(180px,20vw,360px);max-width:420px;padding:0.5rem 0.8rem;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--text)}
+
+/* Actions (right) */
+.nav-actions{position:absolute;right:1rem;top:50%;transform:translateY(-50%);display:flex;gap:0.75rem;align-items:center}
+
+/* small adjustments for mid-width screens */
+@media (max-width:1200px){
+    .nav-search{right:9.5rem}
+    .nav-search input{min-width:220px}
+}
+
+
 @media (max-width:900px){
     .logo .brand{display:none}
     .logo img{width:36px;height:36px}
-    .logo{margin-right:0}
+    .nav-list{display:none}
+    .nav-actions{display:none}
+    .nav-toggle{display:inline-flex}
+    .nav-search{display:none}
+    .header-inner{position:relative}
+    .primary-nav{position:relative;z-index:50}
+    .primary-nav.open .nav-list{display:flex;flex-direction:column;background:transparent;padding:1rem;border-radius:8px}
+    .primary-nav.open .nav-actions{display:flex;flex-direction:column;margin-top:0.5rem}
 }
 
 .nav-toggle{
@@ -102,10 +134,9 @@ body{
 .theme-toggle{background:transparent;border:0;color:var(--text);padding:0.4rem;border-radius:6px;cursor:pointer}
 .theme-toggle:focus{outline:2px solid rgba(124,92,255,0.14);outline-offset:2px}
 
-.primary-nav{display:flex;align-items:center;gap:1.25rem;flex:1}
-.nav-list{display:flex;gap:1.5rem;margin:0;padding:0;list-style:none}
-.nav-list a{color:var(--muted);text-decoration:none;font-weight:600;padding:0.35rem 0;display:inline-block;border-radius:6px}
-.nav-list a:hover{color:var(--text);background:var(--glass)}
+@media (max-width:900px){
+    .nav-list a.active{background:transparent;color:var(--text)}
+}
 
 .nav-actions{display:flex;gap:0.75rem;margin:0;padding:0;list-style:none}
 .link-muted{color:var(--muted);text-decoration:none;padding:0.35rem 0}
@@ -154,8 +185,8 @@ body{
 .social svg{display:block;width:20px;height:20px}
 .social:focus{outline:2px solid rgba(124,92,255,0.16);outline-offset:3px}
 
-/* Fix footer to bottom without overlapping content */
-.site-footer{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg, rgba(11,18,32,0.95), rgba(11,18,32,0.98));}
+/* Footer: keep in normal flow so it doesn't overlap content on small pages */
+.site-footer{position:relative;background:var(--panel);left:auto;right:auto;bottom:auto}
 
 /* Chat widget */
 .ai-chat{position:fixed;right:18px;bottom:90px;z-index:1200}
@@ -227,4 +258,105 @@ p{color:var(--muted);margin:0 0 1rem}
 
 /* Make footer stick below content on short pages */
 html{position:relative;min-height:100%}
-body{margin-bottom:80px}
+/* remove forced bottom margin now footer is in flow */
+body{margin-bottom:0}
+
+/* Product page specifics */
+.product-hero{padding:3rem 0;background:linear-gradient(180deg, rgba(11,16,28,0.55), rgba(7,12,22,0.9));border-radius:12px;margin-bottom:1.5rem}
+.product-hero-inner{display:flex;gap:2rem;align-items:center;justify-content:space-between}
+.product-hero-copy{flex:1;max-width:720px}
+.product-hero-copy .kicker{background:rgba(124,92,255,0.08);color:var(--accent);padding:0.25rem 0.5rem;border-radius:999px;font-weight:700}
+.product-hero-visual{width:360px;max-width:40%;display:flex;align-items:center;justify-content:center}
+.hero-panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.04);width:100%}
+.product-cta{margin-top:1rem;display:flex;gap:0.75rem}
+
+.product-features{padding:2rem 0}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1rem}
+.feature-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1.25rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+
+.product-cases{padding:2rem 0}
+.case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1rem}
+.case-card{background:rgba(255,255,255,0.02);padding:1rem;border-radius:8px}
+
+.product-cta-block{padding:2rem 0}
+.card-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+
+@media (max-width:900px){
+    .product-hero-inner{flex-direction:column}
+    .product-hero-visual{width:100%;max-width:none}
+    .product-hero-copy{max-width:100%}
+    .card-cta{flex-direction:column;align-items:flex-start}
+}
+
+/* Solutions page styles */
+.solutions-hero{padding:2.25rem 0;border-radius:10px;margin-bottom:1rem;background:linear-gradient(180deg, rgba(12,16,26,0.5), rgba(7,12,20,0.85));}
+.solutions-hero-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.solutions-copy{flex:1;max-width:760px}
+.solutions-cta{display:flex;gap:0.75rem}
+
+.solutions-grid{padding:1.5rem 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1rem}
+.solution-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1.25rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+.solution-card h3{margin-bottom:0.5rem}
+.solution-card ul{margin:0.6rem 0 0;padding-left:1rem}
+.solution-card li{margin-bottom:0.4rem}
+
+.solutions-cases{padding:1.25rem 0}
+.case-strip{display:flex;gap:1rem;margin-top:0.75rem}
+.case{background:rgba(255,255,255,0.02);padding:0.9rem;border-radius:8px;flex:1}
+
+.solutions-cta-block{padding:1.25rem 0}
+.card-cta{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+
+@media (max-width:900px){
+    .solutions-hero-inner{flex-direction:column}
+    .case-strip{flex-direction:column}
+    .card-cta{flex-direction:column;align-items:flex-start}
+}
+
+/* Dev hub styles */
+.dev-hero{padding:2rem 0;border-radius:10px;margin-bottom:1rem;background:linear-gradient(180deg, rgba(10,14,22,0.5), rgba(6,10,16,0.85));}
+.dev-hero-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.sdk-cta pre.quick-snippet{background:rgba(255,255,255,0.03);padding:0.85rem;border-radius:8px;color:var(--text);font-size:0.9rem}
+.sdk-grid .sdk-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+
+.dev-resources .card{padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.02)}
+
+@media (max-width:900px){
+    .dev-hero-inner{flex-direction:column}
+    .sdk-cta{width:100%}
+}
+
+/* Pricing styles */
+.pricing-hero{padding:1.5rem 0}
+.pricing-grid .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1rem}
+.plan-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1.25rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03);text-align:center}
+.plan-badge{display:inline-block;padding:0.25rem 0.5rem;border-radius:999px;background:rgba(124,92,255,0.08);color:var(--accent);font-weight:700;margin-bottom:0.5rem}
+.plan-popular{box-shadow:0 12px 32px rgba(124,92,255,0.08);transform:translateY(-4px)}
+.plan-card h3{margin:0.75rem 0}
+.plan-card p{margin-bottom:1rem}
+
+@media (max-width:900px){
+    .pricing-grid .grid{grid-template-columns:1fr}
+}
+
+/* Enterprise page styles */
+.enterprise-hero{padding:2rem 0;border-radius:10px;margin-bottom:1rem;background:linear-gradient(180deg, rgba(12,10,20,0.5), rgba(6,8,14,0.85));}
+.enterprise-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.enterprise-stats{display:flex;gap:1rem}
+.enterprise-stats .stat{background:rgba(255,255,255,0.02);padding:0.75rem;border-radius:8px;text-align:center}
+.enterprise-capabilities .cap-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+
+@media (max-width:900px){
+    .enterprise-inner{flex-direction:column}
+    .enterprise-stats{width:100%;justify-content:stretch}
+}
+
+/* Resources page styles */
+.resources-hero{padding:1.25rem 0}
+.resource-search{width:100%;max-width:520px;padding:0.6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--text)}
+.resources-grid .resource-card{background:rgba(255,255,255,0.02);padding:1rem;border-radius:8px}
+
+@media (max-width:900px){
+    .resource-search{width:100%}
+}

@@ -1,0 +1,8 @@
+pyproject.toml
+setup.py
+zclonic.egg-info/PKG-INFO
+zclonic.egg-info/SOURCES.txt
+zclonic.egg-info/dependency_links.txt
+zclonic.egg-info/entry_points.txt
+zclonic.egg-info/requires.txt
+zclonic.egg-info/top_level.txt

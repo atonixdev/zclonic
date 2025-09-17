@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: zclonic-svc
   namespace: zclonic
+  annotations:
+    metallb.universe.tf/address-pool: "ipv6-pool"
 spec:
   selector:
     app: zclonic
@@ -10,4 +12,8 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5000
-  type: ClusterIP
+  type: LoadBalancer
+  ipFamilies:
+    - IPv4
+    - IPv6
+  ipFamilyPolicy: PreferDualStack

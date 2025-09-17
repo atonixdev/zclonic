@@ -1,19 +1,103 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% endblock %}
-{% extends 'base.html' %}
 
-{% block content %}
-  <div class="container">
-    <div class="card">
-      <h1>Solutions</h1>
-      <p class="muted">Industry-specific solutions: finance, healthcare, e-commerce, and more.</p>
-      <ul>
-        <li>Custom ML pipelines</li>
-        <li>Data privacy & compliance</li>
-        <li>Integration & support</li>
-      </ul>
+  <section class="solutions-hero">
+    <div class="container">
+      <div class="solutions-hero-inner">
+        <div class="solutions-copy">
+          <h1>Solutions by industry</h1>
+          <p class="lead">Tailored workflows and compliance-ready deployments for finance, healthcare, e-commerce, and more — so your teams move faster with confidence.</p>
+          <p class="muted">Pre-built templates, expert integrations, and end-to-end security allow you to apply AI where it matters most.</p>
+        </div>
+        <div class="solutions-cta">
+          <a class="btn btn-primary" href="{{ url_for('main.contact') }}">Request a demo</a>
+          <a class="btn" href="{{ url_for('main.product') }}" style="margin-left:0.6rem">See product</a>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="solutions-grid">
+    <div class="container">
+      <h2>Featured solutions</h2>
+      <p class="muted">Use one of our industry blueprints or customize your own pipeline.</p>
+      <div class="grid">
+        <article class="solution-card">
+          <h3>Finance: Risk & Compliance</h3>
+          <p class="muted">Automate KYC, detect anomalies, and keep audit trails for regulators.</p>
+          <ul>
+            <li>Document classification</li>
+            <li>Automated redaction</li>
+            <li>Compliance dashboards</li>
+          </ul>
+        </article>
+
+        <article class="solution-card">
+          <h3>Healthcare: Clinical Research</h3>
+          <p class="muted">Aggregate study notes, extract structured outcomes, and collaborate securely.</p>
+          <ul>
+            <li>PHI-safe pipelines</li>
+            <li>De-identification tooling</li>
+            <li>Secure sharing</li>
+          </ul>
+        </article>
+
+        <article class="solution-card">
+          <h3>E-commerce: Customer Insights</h3>
+          <p class="muted">Turn product feedback and support logs into prioritized improvements.</p>
+          <ul>
+            <li>Sentiment & trend detection</li>
+            <li>Automated tagging</li>
+            <li>Integration with helpdesk</li>
+          </ul>
+        </article>
+
+        <article class="solution-card">
+          <h3>Enterprise: Integration & Scale</h3>
+          <p class="muted">Connect to your data stack with enterprise connectors and deploy at scale.</p>
+          <ul>
+            <li>VPC-friendly deploys</li>
+            <li>SAML & SSO</li>
+            <li>Observability</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="solutions-cases">
+    <div class="container">
+      <h2>Case studies</h2>
+      <div class="case-strip">
+        <div class="case">
+          <strong>Global Bank</strong>
+          <p class="muted">Reduced compliance review time by 62% using automated pipelines.</p>
+        </div>
+        <div class="case">
+          <strong>Health Lab</strong>
+          <p class="muted">Streamlined trial data ingestion and reporting.</p>
+        </div>
+        <div class="case">
+          <strong>Retail Platform</strong>
+          <p class="muted">Improved product discovery and reduced churn.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="solutions-cta-block">
+    <div class="container">
+      <div class="card card-cta">
+        <div>
+          <h3>Want a tailored demo?</h3>
+          <p class="muted">Tell us your industry and goals — we'll prepare a short walkthrough.</p>
+        </div>
+        <div>
+          <a class="btn btn-primary" href="{{ url_for('main.contact') }}">Request demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
 {% endblock %}

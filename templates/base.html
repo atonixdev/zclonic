@@ -31,13 +31,13 @@
 
             <nav id="primary-navigation" class="primary-nav" role="navigation" aria-label="Primary">
                 <ul class="nav-list">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/product">Product</a></li>
-                    <li><a href="/solutions">Solutions</a></li>
-                    <li><a href="/Devs">Devs</a></li>
-                    <li><a href="/pricing">Pricing</a></li>
-                    <li><a href="/Enterprise">Enterprise</a></li>
-                    <li><a href="/resources">Resources</a></li>
+                    <li><a class="{% if request.path == url_for('main.dashboard') %}active{% endif %}" href="{{ url_for('main.dashboard') }}" {% if request.path == url_for('main.dashboard') %}aria-current="page"{% endif %}>Home</a></li>
+                    <li><a class="{% if request.path == url_for('main.product') %}active{% endif %}" href="{{ url_for('main.product') }}" {% if request.path == url_for('main.product') %}aria-current="page"{% endif %}>Product</a></li>
+                    <li><a class="{% if request.path == url_for('main.solutions') %}active{% endif %}" href="{{ url_for('main.solutions') }}" {% if request.path == url_for('main.solutions') %}aria-current="page"{% endif %}>Solutions</a></li>
+                    <li><a class="{% if request.path == url_for('main.devs') %}active{% endif %}" href="{{ url_for('main.devs') }}" {% if request.path == url_for('main.devs') %}aria-current="page"{% endif %}>Devs</a></li>
+                    <li><a class="{% if request.path == url_for('main.pricing') %}active{% endif %}" href="{{ url_for('main.pricing') }}" {% if request.path == url_for('main.pricing') %}aria-current="page"{% endif %}>Pricing</a></li>
+                    <li><a class="{% if request.path == url_for('main.enterprise') %}active{% endif %}" href="{{ url_for('main.enterprise') }}" {% if request.path == url_for('main.enterprise') %}aria-current="page"{% endif %}>Enterprise</a></li>
+                    <li><a class="{% if request.path == url_for('main.resources') %}active{% endif %}" href="{{ url_for('main.resources') }}" {% if request.path == url_for('main.resources') %}aria-current="page"{% endif %}>Resources</a></li>
                 </ul>
 
                 <form class="nav-search" role="search" action="/search" method="get">
@@ -68,7 +68,8 @@
         </div>
     </header>
 
-        <!-- Hero -->
+        <!-- Hero (show only on dashboard) -->
+        {% if request.path == url_for('main.dashboard') %}
         <section class="hero">
             <div class="container full-width">
                 <span class="kicker" data-i18n="kicker">Enterprise</span>
@@ -102,6 +103,7 @@
                 </div>
             </div>
         </section>
+        {% endif %}
 
     <main class="site-main">
         <div class="container full-width">

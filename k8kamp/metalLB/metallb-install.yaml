@@ -1,0 +1,13 @@
+# Install MetalLB (namespace + components) - apply with: kubectl apply -f metallb-install.yaml
+# This is the official quickstart manifest reference (v0.13/0.14). If you prefer, fetch latest from https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-native.yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metallb-system
+---
+# NOTE: The full MetalLB manifests are large; we recommend fetching the official manifest at runtime.
+# For convenience in air-gapped environments, you can download the manifest and place it here.
+# Example (run locally):
+# curl -L https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-native.yaml -o k8kamp/metalLB/metallb-native.yaml
+

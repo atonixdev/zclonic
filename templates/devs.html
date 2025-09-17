@@ -1,11 +1,61 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container">
-    <div class="card">
-      <h1>Developers</h1>
-      <p class="muted">Tools, SDKs, and API docs — everything developers need to integrate the Research AI Portal.</p>
-      <p><a href="#">View API docs</a> | <a href="#">SDKs</a></p>
+
+  <section class="dev-hero">
+    <div class="container">
+      <div class="dev-hero-inner">
+        <div>
+          <h1>Developer Hub</h1>
+          <p class="lead">APIs, SDKs, and quickstarts to get your team integrating in minutes.</p>
+          <p class="muted">Get API keys, browse docs, and try example requests.</p>
+          <div style="margin-top:1rem">
+            <a class="btn btn-primary" href="#">Get API key</a>
+            <a class="btn" href="#" style="margin-left:0.6rem">View docs</a>
+          </div>
+        </div>
+        <div class="sdk-cta">
+          <pre class="quick-snippet">curl -X POST /api/chat -d '{"message":"Summarize"}'</pre>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <section class="sdk-grid">
+    <div class="container">
+      <h2>SDKs & Tools</h2>
+      <p class="muted">Official SDKs and community tools to accelerate integration.</p>
+      <div class="grid">
+        <div class="sdk-card">
+          <h3>Python SDK</h3>
+          <p class="muted">pip install zclonic</p>
+        </div>
+        <div class="sdk-card">
+          <h3>JavaScript SDK</h3>
+          <p class="muted">npm i @zclonic/client</p>
+        </div>
+        <div class="sdk-card">
+          <h3>CLI</h3>
+          <p class="muted">Manage uploads and jobs from your terminal</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dev-resources">
+    <div class="container">
+      <h2>Resources</h2>
+      <div class="row">
+        <div class="card">
+          <h3>API Reference</h3>
+          <p class="muted">Complete docs for endpoints, SDKs, and error codes.</p>
+        </div>
+        <div class="card">
+          <h3>Examples</h3>
+          <p class="muted">Recipes and sample projects to bootstrap your integration.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
 {% endblock %}
