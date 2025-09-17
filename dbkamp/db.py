@@ -44,6 +44,8 @@ def init_db():
     ensure_column('notify_email', 'notify_email INTEGER DEFAULT 1')
     ensure_column('notify_digest', "notify_digest TEXT DEFAULT 'weekly'")
     ensure_column('notify_webhook', 'notify_webhook TEXT')
+    # admin flag
+    ensure_column('is_admin', 'is_admin INTEGER DEFAULT 0')
     conn.commit()
     conn.close()
     # ensure API tokens table exists
@@ -52,6 +54,7 @@ def init_db():
     ensure_groups_tables()
     ensure_projects_tables()
     ensure_environments_table()
+    ensure_audit_table()
 
 
 def ensure_api_tokens_table():
@@ -155,6 +158,20 @@ def ensure_projects_tables():
     ''')
     conn.commit()
     conn.close()
+    # project members table
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS project_members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        project_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        role TEXT NOT NULL,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    conn.commit()
+    conn.close()
 
 
 def ensure_environments_table():
@@ -182,6 +199,23 @@ def ensure_environments_table():
     conn.close()
 
 
+def ensure_audit_table():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_type TEXT NOT NULL,
+        actor_user_id INTEGER,
+        details TEXT,
+        ip TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    conn.commit()
+    conn.close()
+
+
 def create_environment(project_id: int, name: str, target: str = None):
     conn = get_connection()
     cur = conn.cursor()
@@ -189,6 +223,10 @@ def create_environment(project_id: int, name: str, target: str = None):
     conn.commit()
     eid = cur.lastrowid
     conn.close()
+    try:
+        record_audit('environment.create', actor_user_id=None, details=f'project_id={project_id}, env={name}')
+    except Exception:
+        pass
     return eid
 
 
@@ -221,6 +259,24 @@ def list_env_vars(environment_id: int):
     conn.close()
     return [dict(r) for r in rows]
 
+
+def record_audit(event_type: str, actor_user_id: int = None, details: str = None, ip: str = None):
+    """Record an audit event."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO audit_logs (event_type, actor_user_id, details, ip) VALUES (?, ?, ?, ?)', (event_type, actor_user_id, details, ip))
+    conn.commit()
+    conn.close()
+
+
+def list_audit_logs(limit: int = 200):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id, event_type, actor_user_id, details, ip, created_at FROM audit_logs ORDER BY created_at DESC LIMIT ?', (limit,))
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
 def create_project(name: str, repo_url: str = None, orchestration: str = None, config: str = None):
     conn = get_connection()
     cur = conn.cursor()
@@ -228,6 +284,10 @@ def create_project(name: str, repo_url: str = None, orchestration: str = None, c
     conn.commit()
     pid = cur.lastrowid
     conn.close()
+    try:
+        record_audit('project.create', actor_user_id=None, details=f'project={name}, repo={repo_url}')
+    except Exception:
+        pass
     return pid
 
 
@@ -285,6 +345,28 @@ def list_milestones(project_id: int):
     return [dict(r) for r in rows]
 
 
+def add_project_member(project_id: int, user_id: int, role: str = 'member'):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, ?)', (project_id, user_id, role))
+    conn.commit()
+    conn.close()
+    try:
+        record_audit('project.member.add', actor_user_id=None, details=f'project_id={project_id}, user_id={user_id}, role={role}')
+    except Exception:
+        pass
+    return True
+
+
+def list_project_members(project_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT pm.id, pm.user_id, pm.role, u.email, u.full_name, pm.added_at FROM project_members pm LEFT JOIN users u ON u.id = pm.user_id WHERE pm.project_id = ? ORDER BY pm.added_at DESC', (project_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 def create_group(name: str, description: str = None):
     conn = get_connection()
     cur = conn.cursor()
@@ -292,6 +374,10 @@ def create_group(name: str, description: str = None):
     conn.commit()
     gid = cur.lastrowid
     conn.close()
+    try:
+        record_audit('group.create', actor_user_id=None, details=f'group={name}')
+    except Exception:
+        pass
     return gid
 
 
@@ -346,6 +432,10 @@ def record_upload(user_id: int, filename: str, status: str, message: str = None,
     cur.execute('INSERT INTO uploads (user_id, filename, status, message, chunks_indexed) VALUES (?, ?, ?, ?, ?)', (user_id, filename, status, message, chunks_indexed))
     conn.commit()
     conn.close()
+    try:
+        record_audit('upload.record', actor_user_id=user_id, details=f'{filename} status={status} msg={message}')
+    except Exception:
+        pass
 
 
 def list_uploads_for_user(user_id: int, limit: int = 20):
@@ -366,6 +456,10 @@ def create_api_token(user_id: int, name: str, token_plain: str):
     cur.execute('INSERT INTO api_tokens (user_id, name, token_hash) VALUES (?, ?, ?)', (user_id, name, token_hash))
     conn.commit()
     conn.close()
+    try:
+        record_audit('api.token.create', actor_user_id=user_id, details=f'name={name}')
+    except Exception:
+        pass
     return True
 
 
@@ -388,6 +482,10 @@ def revoke_api_token(token_id: int, user_id: int):
     cur.execute('UPDATE api_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE id = ?', (token_id,))
     conn.commit()
     conn.close()
+    try:
+        record_audit('api.token.revoke', actor_user_id=user_id, details=f'token_id={token_id}')
+    except Exception:
+        pass
     return True
 
 
@@ -399,6 +497,10 @@ def create_user(email: str, password: str) -> bool:
         cur = conn.cursor()
         cur.execute('INSERT INTO users (email, password) VALUES (?, ?)', (email, pw_hash))
         conn.commit()
+        try:
+            record_audit('user.create', actor_user_id=None, details=f'email={email}')
+        except Exception:
+            pass
         return True
     except sqlite3.IntegrityError:
         return False

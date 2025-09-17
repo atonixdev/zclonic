@@ -29,3 +29,8 @@ isort
 flake8
 sentence-transformers
 faiss-cpu
+transformers
+torch
+TTS[all]
+soundfile
+numpy

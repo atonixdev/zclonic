@@ -148,8 +148,63 @@ For production, use the provided `Dockerfile` and `compose.yaml` as a basis and 
 
 ---
 
+## Admin & audit logs
+
+This project includes a simple admin console and audit logging to help administrators monitor important events.
+
+- Make a user an admin:
+	- The `users` table contains an `is_admin` column (0/1). To grant admin rights to an existing user run:
+
+```sql
+UPDATE dbkamp.sqlite3 SET is_admin = 1 WHERE email = 'admin@example.com';
+```
+
+	- Or, using the Python DB helpers, you can set the field manually in a script that connects via `dbkamp.db.get_connection()`.
+
+- Viewing audit logs:
+	- Admins can visit `/dashboard/admin` in the app to inspect recent audit events (sign-ins, token creation/revocation, group/project changes, uploads, etc.).
+	- Audit events are stored in the `audit_logs` table (columns: `event_type`, `actor_user_id`, `details`, `ip`, `created_at`).
+
+- Notes and next steps:
+	- The admin console is read-only by default; actions such as revoking sessions or rotating tokens are UI placeholders and require backend handlers.
+	- For production, forward audit logs to a centralized logging system (ELK / Splunk / Cloud Logging) and enable secure retention and access controls.
+
+	### How super users (admins) log in
+
+	- Admins use the normal login flow (email/password or OAuth). Once a user's `is_admin` flag is set to `1`, they can visit `/dashboard/admin` to access the admin console.
+	- Use the provided convenience script to promote a user by email:
+
+	```bash
+	./scripts/promote_user_to_admin.py admin@example.com
+	```
+
+	After promotion, the user simply logs in and navigates to `/dashboard/admin`.
+
+---
+
 ## Contributing
 
 Contributions are welcome. Please open PRs against `main` and include a short description and tests where possible.
+
+
+---
+
+## Text generation & TTS (optional)
+
+This project includes optional endpoints for text generation and text-to-speech. These are disabled until you install the required packages.
+
+Install dependencies (recommended inside your virtualenv):
+
+```bash
+pip install transformers torch TTS[all] soundfile numpy
+```
+
+Endpoints:
+- POST `/api/generate` JSON {"prompt": "Hello"} → returns generated text
+- POST `/api/tts` JSON {"text": "Hello world"} → returns WAV audio
+
+Notes:
+- The code uses lazy imports and will return a helpful error if the dependencies are missing.
+- First run may download models (this can be large). For GPU acceleration, install a CUDA-enabled `torch` build.
 
 

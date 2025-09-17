@@ -624,6 +624,51 @@ def dashboard_project_update_config(project_id):
     return redirect(url_for('main.dashboard_project_view', project_id=project_id))
 
 
+@main.route('/dashboard/project/<int:project_id>/create-monitor', methods=['POST'])
+def dashboard_project_create_monitor(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    email = request.form.get('monitor_email')
+    name = request.form.get('monitor_name') or ''
+    if not email:
+        flash('Email is required to create a monitor.', 'error')
+        return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+    # If the user exists, link; otherwise create a user with a random password and link
+    from dbkamp.db import get_connection, create_user, add_project_member
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id FROM users WHERE email = ?', (email,))
+    row = cur.fetchone()
+    if row:
+        user_id = row['id']
+        created = False
+        password_plain = None
+    else:
+        import secrets
+        password_plain = secrets.token_urlsafe(12)
+        created = create_user(email, password_plain)
+        # fetch id
+        cur.execute('SELECT id FROM users WHERE email = ?', (email,))
+        new = cur.fetchone()
+        user_id = new['id'] if new else None
+    conn.close()
+    if not user_id:
+        flash('Unable to create or find user.', 'error')
+        return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+    add_project_member(project_id, user_id, role='monitor')
+    if created and password_plain:
+        flash('Monitor account created. Save the password now; it will not be shown again.', 'success')
+        # render the project view and show the password once
+        from dbkamp.db import get_project, list_issues, list_milestones, list_project_members
+        proj = get_project(project_id)
+        issues = list_issues(project_id)
+        milestones = list_milestones(project_id)
+        members = list_project_members(project_id)
+        return render_template('dashboard_project_view.html', project=proj, issues=issues, milestones=milestones, members=members, new_monitor={'email': email, 'password': password_plain})
+    flash('Monitor added to project.', 'success')
+    return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+
+
 @main.route('/dashboard/environment')
 def dashboard_environment():
     if not _require_login():
@@ -685,6 +730,25 @@ def dashboard_security():
     return render_template('dashboard_security.html')
 
 
+@main.route('/dashboard/admin')
+def dashboard_admin():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_admin')))
+    user_id = session.get('user_id')
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT is_admin FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row or not row['is_admin']:
+        flash('Admin access required.', 'error')
+        return redirect(url_for('main.dashboard'))
+    from dbkamp.db import list_audit_logs
+    logs = list_audit_logs(200)
+    return render_template('dashboard_admin.html', logs=logs)
+
+
 @main.route('/api/chat', methods=['POST'])
 def api_chat():
     data = request.get_json() or {}
@@ -694,6 +758,41 @@ def api_chat():
         return {'error': 'no prompt provided'}, 400
     reply = ai_chat(prompt, model=model)
     return {'reply': reply}
+
+
+@main.route('/api/generate', methods=['POST'])
+def api_generate():
+    data = request.get_json() or {}
+    prompt = data.get('prompt') or data.get('q')
+    model = data.get('model') or 'gpt2'
+    if not prompt:
+        return {'error': 'no prompt provided'}, 400
+    try:
+        from models.tts_and_text import text_generate
+        out = text_generate(prompt, model_name=model)
+        return {'result': out}
+    except ImportError as e:
+        return {'error': str(e)}, 500
+    except Exception as e:
+        return {'error': 'generation failed: ' + str(e)}, 500
+
+
+@main.route('/api/tts', methods=['POST'])
+def api_tts():
+    data = request.get_json() or {}
+    text = data.get('text')
+    if not text:
+        return {'error': 'no text provided'}, 400
+    try:
+        from models.tts_and_text import synthesize_speech
+        wav = synthesize_speech(text)
+        from flask import send_file
+        import io
+        return send_file(io.BytesIO(wav), mimetype='audio/wav', as_attachment=False, download_name='speech.wav')
+    except ImportError as e:
+        return {'error': str(e)}, 500
+    except Exception as e:
+        return {'error': 'TTS failed: ' + str(e)}, 500
 
 
 @main.route('/logout')

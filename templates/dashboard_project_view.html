@@ -40,6 +40,38 @@
           <div class="muted">No issues yet.</div>
         {% endif %}
       </div>
+      
+        <div class="card" style="margin-top:1rem">
+          <h3>Project members</h3>
+          {% if members and members|length > 0 %}
+            <ul>
+              {% for m in members %}
+                <li>{{ m.email }} — <span class="muted">{{ m.role }}</span></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="muted">No members yet.</div>
+          {% endif %}
+
+          <h4 style="margin-top:1rem">Create a monitor account</h4>
+          <p class="muted">Create a lightweight monitor account that can be used to watch frontend/backend activity.</p>
+          <form action="{{ url_for('main.dashboard_project_create_monitor', project_id=project.id) }}" method="post">
+            <label>Email</label>
+            <input name="monitor_email" placeholder="monitor@example.com" />
+            <label>Display name (optional)</label>
+            <input name="monitor_name" />
+            <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Create monitor</button></div>
+          </form>
+
+          {% if new_monitor %}
+            <div class="card" style="margin-top:0.75rem">
+              <h4>New monitor credentials (save now)</h4>
+              <p><strong>Email:</strong> {{ new_monitor.email }}</p>
+              <p><strong>Password:</strong> <code>{{ new_monitor.password }}</code></p>
+              <div class="muted">This password will not be shown again. You should deliver it securely to the monitor account owner.</div>
+            </div>
+          {% endif %}
+        </div>
     </div>
 
     <aside>
