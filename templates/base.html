@@ -1,0 +1,135 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Research AI Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="site-header" role="banner">
+        <div class="container header-inner">
+            <div class="logo">xclony</div>
+
+            <button class="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Toggle navigation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <nav id="primary-navigation" class="primary-nav" role="navigation" aria-label="Primary">
+                <ul class="nav-list">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/product">Product</a></li>
+                    <li><a href="/solutions">Solutions</a></li>
+                    <li><a href="/Devs">Devs</a></li>
+                    <li><a href="/pricing">Pricing</a></li>
+                    <li><a href="/Enterprise">Enterprise</a></li>
+                    <li><a href="/resources">Resources</a></li>
+                </ul>
+
+                <form class="nav-search" role="search" action="/search" method="get">
+                    <input name="q" type="search" placeholder="Search docs, examples..." aria-label="Search">
+                </form>
+
+                <ul class="nav-actions">
+                    {% if session.get('user_id') %}
+                        <li class="muted">{{ session.get('user_email') }}</li>
+                        <li><a href="{{ url_for('main.dashboard') }}" class="link-muted">Dashboard</a></li>
+                        <li><a href="{{ url_for('main.logout') }}" class="link-muted">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('main.login') }}" class="link-muted">Login</a></li>
+                        <li><a href="{{ url_for('main.signup') }}" class="btn-signup">Sign Up</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <span class="kicker">Enterprise</span>
+                <h1>Welcome to Zclonic by AtonixCorp</h1>
+                <p class="lead">AI-Powered Infrastructure for the Enterprise Frontier</p>
+                <p>Zclonic is your multi-purpose command center—built for enterprises that demand autonomy, resilience, and scale. Whether you're managing sensitive data, deploying secure APIs, or orchestrating IT operations across borders, our platform delivers uncompromising performance and control.</p>
+
+                <div class="hero-grid">
+                    <div class="hero-card">
+                        <h3>Enterprise-Grade AI Platform</h3>
+                        <p>Designed for businesses that need more than just cloud hosting. Zclonic empowers you to upload, manage, and analyze your data with precision and security.</p>
+                    </div>
+                    <div class="hero-card">
+                        <h3>Developer-Ready API Ecosystem</h3>
+                        <p>Build, integrate, and scale with confidence. Our APIs are built for serious developers—offering robust documentation and authentication layers.</p>
+                    </div>
+                    <div class="hero-card">
+                        <h3>Secure IT Server Hub</h3>
+                        <p>Host your infrastructure with full sovereignty. Zclonic supports containerized workloads, Terraform automation, and Kubernetes orchestration.</p>
+                    </div>
+                    <div class="hero-card">
+                        <h3>Autonomous Data Management</h3>
+                        <p>From ingestion to insight, Zclonic helps enterprises transform raw data into actionable intelligence.</p>
+                    </div>
+                </div>
+
+                <div class="cta-group">
+                    <a class="btn btn-primary" href="{{ url_for('main.signup') }}">Get Started — It's free</a>
+                    <a class="btn btn-secondary" href="{{ url_for('main.product') }}">Learn more</a>
+                    <a class="btn" href="{{ url_for('main.upload_get') }}" style="margin-left:6px">Upload data</a>
+                </div>
+            </div>
+        </section>
+
+        <main class="site-main">
+                <div class="container">
+                        {% block content %}{% endblock %}
+                </div>
+        </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <p>&copy; {{ current_year }} xclony. All rights reserved.</p>
+                <div style="display:flex;align-items:center;gap:1rem">
+                    <div class="socials">
+                    <a href="#" aria-label="Twitter" class="social">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 5.92c-.63.28-1.3.47-2 .55.72-.43 1.27-1.11 1.53-1.92-.67.4-1.42.69-2.22.85A3.5 3.5 0 0016.15 4c-1.93 0-3.5 1.6-3.5 3.58 0 .28.03.55.09.81-2.91-.15-5.48-1.6-7.21-3.8-.3.5-.47 1.08-.47 1.69 0 1.17.6 2.2 1.52 2.8-.56-.02-1.09-.18-1.55-.44v.04c0 1.65 1.15 3.03 2.66 3.34-.28.07-.57.1-.87.1-.21 0-.42-.02-.62-.06.42 1.33 1.63 2.3 3.06 2.33A7.02 7.02 0 012 19.54 9.9 9.9 0 008.09 21c5.98 0 9.26-5.22 9.26-9.74v-.44c.63-.46 1.17-1.03 1.6-1.68-.58.26-1.2.44-1.84.52z"/></svg>
+                    </a>
+                    <a href="#" aria-label="LinkedIn" class="social">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 11.02 5.001 2.5 2.5 0 01-.02-5zM3 9h4v12H3zM9 9h3.8v1.6h.05c.53-1 1.83-2.06 3.77-2.06C20.88 8.54 21 11 21 13.9V21h-4v-6.2c0-1.48-.03-3.39-2.07-3.39-2.07 0-2.39 1.62-2.39 3.29V21H9z"/></svg>
+                    </a>
+                    <a href="#" aria-label="GitHub" class="social">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A12 12 0 000 12.6c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.2.8-.5v-2.1c-3.3.7-4-1.6-4-1.6-.6-1.5-1.5-1.9-1.5-1.9-1.2-.8.1-.8.1-.8 1.4.1 2.2 1.5 2.2 1.5 1.1 2 2.8 1.4 3.5 1.1.1-.9.4-1.4.7-1.7-2.6-.3-5.3-1.3-5.3-6 0-1.3.5-2.3 1.3-3.1-.1-.3-.6-1.4.1-2.8 0 0 1-.3 3.2 1.2a11 11 0 016 0c2.2-1.5 3.2-1.2 3.2-1.2.7 1.4.2 2.5.1 2.8.8.8 1.3 1.8 1.3 3.1 0 4.7-2.7 5.7-5.3 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5A12 12 0 0012 .5z"/></svg>
+                    </a>
+                    </div>
+                    <div class="footer-links muted">
+                        <a href="{{ url_for('main.investors') }}" class="link-muted">Investors</a>
+                        <a href="{{ url_for('main.partners') }}" class="link-muted" style="margin-left:0.6rem">Partners</a>
+                        <a href="{{ url_for('main.editorial') }}" class="link-muted" style="margin-left:0.6rem">Editorial</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chat widget -->
+    <div id="ai-chat" class="ai-chat" aria-hidden="true">
+        <button class="ai-chat-toggle" aria-label="Open chat">💬</button>
+        <div class="ai-chat-panel" role="dialog" aria-label="AI chat">
+            <div class="ai-chat-header">AI Assistant <button class="ai-chat-close" aria-label="Close chat">×</button></div>
+            <div class="ai-chat-body" id="ai-chat-body"></div>
+            <form class="ai-chat-form" id="ai-chat-form">
+                <input id="ai-input" name="q" placeholder="Ask anything..." autocomplete="off">
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

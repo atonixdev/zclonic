@@ -1,0 +1,12 @@
+Flask
+Jinja2
+requests
+numpy
+pandas
+matplotlib
+scipy
+SQLAlchemy
+pytest
+beautifulsoup4
+lxml
+pytest-cov

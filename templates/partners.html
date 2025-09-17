@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="site-main">
+    <div class="container">
+        <section class="card">
+            <h2>For Technical Partners</h2>
+            <p class="lead">Zclonic: The Developer’s Fortress for Enterprise-Grade Autonomy</p>
+
+            <p>Zclonic offers a multi-purpose deployment environment for serious builders. Whether you're integrating bank-grade APIs, deploying containerized workloads, or managing sensitive data, our platform delivers reproducible flows, hardened security, and full-stack control.</p>
+
+            <ul>
+                <li>Terraform-ready infrastructure</li>
+                <li>Kubernetes orchestration</li>
+                <li>API-first architecture</li>
+                <li>Sovereign hosting options</li>
+                <li>CI/CD pipelines and dev environments baked in</li>
+            </ul>
+
+            <p>We don’t just support your code—we protect your mission. If you'd like to evaluate technical integration, <a href="{{ url_for('main.contact') }}">reach out to our partnerships team</a>.</p>
+        </section>
+    </div>
+</div>
+{% endblock %}

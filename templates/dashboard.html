@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Upload a Document</h2>
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="document">
+    <button type="submit">Process</button>
+</form>
+
+{% if result %}
+    <div class="result">
+        <h3>AI Output:</h3>
+        <p>{{ result }}</p>
+    </div>
+{% endif %}
+{% endblock %}

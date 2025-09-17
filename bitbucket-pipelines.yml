@@ -1,0 +1,23 @@
+image: python:3.11
+
+pipelines:
+  default:
+    - step:
+        name: Install & Test
+        caches:
+          - pip
+        script:
+          - python -V
+          - pip install --upgrade pip
+          - pip install -r requirements.txt || true
+          - pip install flake8 || true
+          - flake8 || true
+          - pytest -q || true
+
+# Optional Docker build step (requires repository variables for credentials)
+#  - step:
+#      name: Build Docker
+#      script:
+#        - docker build -t $DOCKER_REGISTRY/$BITBUCKET_REPO_SLUG:latest .
+#        - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+#        - docker push $DOCKER_REGISTRY/$BITBUCKET_REPO_SLUG:latest

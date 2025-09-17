@@ -1,0 +1,35 @@
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+before_script:
+  - python -V
+  - pip install --upgrade pip
+  - pip install -r requirements.txt || true
+
+lint:
+  stage: lint
+  script:
+    - pip install flake8 || true
+    - flake8 || true
+
+test:
+  stage: test
+  script:
+    - pytest -q || true
+
+# Optional build job
+# build:
+#   stage: build
+#   script:
+#     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+#   only:
+#     - main

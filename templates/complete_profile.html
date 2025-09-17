@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="site-main">
+  <div class="container">
+    <div class="card">
+      <h1>Complete your profile</h1>
+      <p class="muted">A bit more about you helps personalize your experience.</p>
+      <form method="post" action="/complete-profile" class="form-stacked">
+        <label for="full_name">Full name</label>
+        <input id="full_name" name="full_name" type="text" required>
+
+        <label for="company">Company</label>
+        <input id="company" name="company" type="text" required>
+
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel">
+
+        <div style="margin-top:1rem">
+          <button class="btn-signup" type="submit">Save profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

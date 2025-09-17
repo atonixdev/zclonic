@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="site-main">
+  <div class="container">
+    <div class="card">
+      <h1>Upload Document</h1>
+      <p class="muted">Only logged-in users can upload documents for processing.</p>
+      <form method="post" action="/upload" enctype="multipart/form-data">
+        <label for="document">Select document</label>
+        <input id="document" name="document" type="file" accept=".txt,.md,.pdf" required>
+        <div style="margin-top:1rem">
+          <button class="btn-signup" type="submit">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
