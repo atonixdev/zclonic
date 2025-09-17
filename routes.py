@@ -33,7 +33,15 @@ def dashboard():
     if not user_id:
         flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('main.login', next=url_for('main.dashboard')))
-    return render_template('dashboard.html')
+    # fetch user profile for conditional rendering
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    user = dict(row) if row else None
+    return render_template('dashboard.html', user=user)
 
 @main.route('/upload', methods=['POST'])
 def upload():
@@ -42,7 +50,21 @@ def upload():
     if not user_id:
         flash('Please log in to upload files.', 'error')
         return redirect(url_for('main.login'))
-    file = request.files['document']
+    # check user's company
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT company FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    company = row['company'] if row else None
+    if not company:
+        flash('Please complete your company information before uploading documents.', 'error')
+        return redirect(url_for('main.complete_profile'))
+    file = request.files.get('document')
+    if not file:
+        flash('No file selected.', 'error')
+        return redirect(url_for('main.dashboard'))
     result = process_document(file)
     return render_template('dashboard.html', result=result)
 
@@ -53,6 +75,16 @@ def upload_get():
     if not user_id:
         flash('Please log in to access uploads.', 'error')
         return redirect(url_for('main.login'))
+    # ensure company is set
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT company FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row or not row['company']:
+        flash('Please complete your company information before uploading documents.', 'error')
+        return redirect(url_for('main.complete_profile'))
     return render_template('upload.html')
 
 
@@ -274,41 +306,145 @@ def _require_login():
 def dashboard_general():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_general')))
-    return render_template('dashboard_general.html')
+    user_id = session.get('user_id')
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    user = dict(row) if row else None
+    return render_template('dashboard_general.html', user=user)
 
 
 @main.route('/dashboard/account')
 def dashboard_account():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_account')))
-    return render_template('dashboard_account.html')
+    user_id = session.get('user_id')
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    user = dict(row) if row else None
+    return render_template('dashboard_account.html', user=user)
+
+
+@main.route('/dashboard/change-password', methods=['POST'])
+def dashboard_change_password():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_account')))
+    user_id = session.get('user_id')
+    old = request.form.get('old_password')
+    new = request.form.get('new_password')
+    confirm = request.form.get('confirm_password')
+    if not old or not new:
+        flash('Please provide both current and new password.', 'error')
+        return redirect(url_for('main.dashboard_account'))
+    # verify old password
+    from dbkamp.db import get_connection, check_password_hash as _check
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT password FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        flash('User not found.', 'error')
+        return redirect(url_for('main.dashboard_account'))
+    from werkzeug.security import check_password_hash
+    if not check_password_hash(row['password'], old):
+        flash('Current password is incorrect.', 'error')
+        return redirect(url_for('main.dashboard_account'))
+    if new != confirm:
+        flash('New passwords do not match.', 'error')
+        return redirect(url_for('main.dashboard_account'))
+    from dbkamp.db import update_password
+    ok = update_password(user_id, new)
+    if ok:
+        flash('Password updated.', 'success')
+    else:
+        flash('Unable to update password.', 'error')
+    return redirect(url_for('main.dashboard_account'))
 
 
 @main.route('/dashboard/notifications')
 def dashboard_notifications():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_notifications')))
-    return render_template('dashboard_notifications.html')
+    user_id = session.get('user_id')
+    from dbkamp.db import get_user_preferences, update_notification_preferences
+    if request.method == 'POST':
+        notify_email = bool(request.form.get('notify_email'))
+        notify_digest = request.form.get('notify_digest') or 'weekly'
+        notify_webhook = request.form.get('notify_webhook') or ''
+        ok = update_notification_preferences(user_id, notify_email, notify_digest, notify_webhook)
+        if ok:
+            flash('Notification preferences updated.', 'success')
+        else:
+            flash('Unable to update preferences.', 'error')
+        return redirect(url_for('main.dashboard_notifications'))
+    prefs = get_user_preferences(user_id)
+    return render_template('dashboard_notifications.html', prefs=prefs)
 
 
 @main.route('/dashboard/api')
 def dashboard_api():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_api')))
-    return render_template('dashboard_api.html')
+    user_id = session.get('user_id')
+    from dbkamp.db import list_api_tokens
+    tokens = list_api_tokens(user_id)
+    return render_template('dashboard_api.html', tokens=tokens)
+
+
+@main.route('/dashboard/api/create-token', methods=['POST'])
+def dashboard_api_create_token():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_api')))
+    user_id = session.get('user_id')
+    name = request.form.get('name') or 'token'
+    # generate a random token to show once
+    import secrets
+    token_plain = secrets.token_urlsafe(32)
+    from dbkamp.db import create_api_token, list_api_tokens
+    create_api_token(user_id, name, token_plain)
+    flash('API token created. Save it now; it will not be shown again.', 'success')
+    # render page with token shown in the page once
+    tokens = list_api_tokens(user_id)
+    return render_template('dashboard_api.html', tokens=tokens, new_token=token_plain)
+
+
+@main.route('/dashboard/api/revoke/<int:token_id>', methods=['POST'])
+def dashboard_api_revoke(token_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_api')))
+    user_id = session.get('user_id')
+    from dbkamp.db import revoke_api_token
+    ok = revoke_api_token(token_id, user_id)
+    if ok:
+        flash('Token revoked.', 'success')
+    else:
+        flash('Unable to revoke token.', 'error')
+    return redirect(url_for('main.dashboard_api'))
 
 
 @main.route('/dashboard/imports')
 def dashboard_imports():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_imports')))
-    return render_template('dashboard_imports.html')
+    user_id = session.get('user_id')
+    from dbkamp.db import list_uploads_for_user
+    uploads = list_uploads_for_user(user_id)
+    return render_template('dashboard_imports.html', uploads=uploads)
 
 
 @main.route('/dashboard/index', methods=['GET', 'POST'])
 def dashboard_index():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_index')))
+    user_id = session.get('user_id')
     if request.method == 'POST':
         f = request.files.get('file')
         if not f:
@@ -320,8 +456,12 @@ def dashboard_index():
         try:
             from models.retriever import index_csv
             n = index_csv(save_path)
+            from dbkamp.db import record_upload
+            record_upload(user_id, f.filename, 'success', message=f'Indexed {n} chunks', chunks_indexed=n)
             flash(f'Indexed {n} chunks from {f.filename}', 'success')
         except Exception as e:
+            from dbkamp.db import record_upload
+            record_upload(user_id, f.filename, 'error', message=str(e), chunks_indexed=0)
             flash('Indexing failed: ' + str(e), 'error')
         return redirect(url_for('main.dashboard_imports'))
     return redirect(url_for('main.dashboard_imports'))
@@ -331,21 +471,211 @@ def dashboard_index():
 def dashboard_group():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_group')))
-    return render_template('dashboard_group.html')
+    # list groups the user can manage (for now show all)
+    from dbkamp.db import list_groups
+    groups = list_groups()
+    return render_template('dashboard_group.html', groups=groups)
+
+
+@main.route('/dashboard/group/create', methods=['POST'])
+def dashboard_group_create():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_group')))
+    name = request.form.get('name')
+    desc = request.form.get('description')
+    if not name:
+        flash('Group name is required.', 'error')
+        return redirect(url_for('main.dashboard_group'))
+    from dbkamp.db import create_group, add_group_member
+    gid = create_group(name, desc)
+    # add current user as admin
+    add_group_member(gid, session.get('user_id'), role='admin')
+    flash('Group created.', 'success')
+    return redirect(url_for('main.dashboard_group'))
+
+
+@main.route('/dashboard/group/<int:group_id>')
+def dashboard_group_view(group_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_group')))
+    from dbkamp.db import list_group_members, list_group_projects
+    members = list_group_members(group_id)
+    projects = list_group_projects(group_id)
+    return render_template('dashboard_group_view.html', group_id=group_id, members=members, projects=projects)
+
+
+@main.route('/dashboard/group/<int:group_id>/add-member', methods=['POST'])
+def dashboard_group_add_member(group_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_group')))
+    email = request.form.get('email')
+    role = request.form.get('role') or 'member'
+    if not email:
+        flash('Email required to add member.', 'error')
+        return redirect(url_for('main.dashboard_group_view', group_id=group_id))
+    # find user by email
+    from dbkamp.db import get_connection, add_group_member
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id FROM users WHERE email = ?', (email,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        flash('User not found.', 'error')
+        return redirect(url_for('main.dashboard_group_view', group_id=group_id))
+    add_group_member(group_id, row['id'], role=role)
+    flash('Member added.', 'success')
+    return redirect(url_for('main.dashboard_group_view', group_id=group_id))
+
+
+@main.route('/dashboard/group/<int:group_id>/link-project', methods=['POST'])
+def dashboard_group_link_project(group_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_group')))
+    project_name = request.form.get('project_name')
+    if not project_name:
+        flash('Project name is required.', 'error')
+        return redirect(url_for('main.dashboard_group_view', group_id=group_id))
+    from dbkamp.db import link_project_to_group
+    link_project_to_group(group_id, project_name)
+    flash('Project linked to group.', 'success')
+    return redirect(url_for('main.dashboard_group_view', group_id=group_id))
 
 
 @main.route('/dashboard/project')
 def dashboard_project():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
-    return render_template('dashboard_project.html')
+    from dbkamp.db import list_projects
+    projects = list_projects()
+    return render_template('dashboard_project.html', projects=projects)
+
+
+@main.route('/dashboard/project/create', methods=['POST'])
+def dashboard_project_create():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    name = request.form.get('name')
+    repo_url = request.form.get('repo_url')
+    orchestration = request.form.get('orchestration')
+    config = request.form.get('config')
+    if not name:
+        flash('Project name is required.', 'error')
+        return redirect(url_for('main.dashboard_project'))
+    from dbkamp.db import create_project
+    pid = create_project(name, repo_url, orchestration, config)
+    flash('Project created.', 'success')
+    return redirect(url_for('main.dashboard_project_view', project_id=pid))
+
+
+@main.route('/dashboard/project/<int:project_id>')
+def dashboard_project_view(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    from dbkamp.db import get_project, list_issues, list_milestones
+    proj = get_project(project_id)
+    issues = list_issues(project_id)
+    milestones = list_milestones(project_id)
+    return render_template('dashboard_project_view.html', project=proj, issues=issues, milestones=milestones)
+
+
+@main.route('/dashboard/project/<int:project_id>/issue', methods=['POST'])
+def dashboard_project_create_issue(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    title = request.form.get('title')
+    body = request.form.get('body')
+    if not title:
+        flash('Issue title is required.', 'error')
+        return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+    from dbkamp.db import create_issue
+    create_issue(project_id, title, body)
+    flash('Issue created.', 'success')
+    return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+
+
+@main.route('/dashboard/project/<int:project_id>/milestone', methods=['POST'])
+def dashboard_project_create_milestone(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    title = request.form.get('title')
+    due_date = request.form.get('due_date')
+    if not title:
+        flash('Milestone title is required.', 'error')
+        return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+    from dbkamp.db import create_milestone
+    create_milestone(project_id, title, due_date)
+    flash('Milestone created.', 'success')
+    return redirect(url_for('main.dashboard_project_view', project_id=project_id))
+
+
+@main.route('/dashboard/project/<int:project_id>/config', methods=['POST'])
+def dashboard_project_update_config(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    config = request.form.get('config')
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('UPDATE projects SET config = ? WHERE id = ?', (config, project_id))
+    conn.commit()
+    conn.close()
+    flash('Project configuration updated.', 'success')
+    return redirect(url_for('main.dashboard_project_view', project_id=project_id))
 
 
 @main.route('/dashboard/environment')
 def dashboard_environment():
     if not _require_login():
         return redirect(url_for('main.login', next=url_for('main.dashboard_environment')))
-    return render_template('dashboard_environment.html')
+    # show all projects and let the user pick to manage environments
+    from dbkamp.db import list_projects
+    projects = list_projects()
+    return render_template('dashboard_environment.html', projects=projects)
+
+
+@main.route('/dashboard/project/<int:project_id>/environments')
+def dashboard_project_environments(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    from dbkamp.db import get_project, list_environments, list_env_vars
+    project = get_project(project_id)
+    envs = list_environments(project_id)
+    # load vars for the first environment for convenience
+    vars_map = {}
+    for e in envs:
+        vars_map[e['id']] = list_env_vars(e['id'])
+    return render_template('dashboard_environment_project.html', project=project, environments=envs, vars_map=vars_map)
+
+
+@main.route('/dashboard/project/<int:project_id>/environments/create', methods=['POST'])
+def dashboard_create_environment(project_id):
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_project')))
+    name = request.form.get('name')
+    target = request.form.get('target')
+    if not name:
+        flash('Environment name is required.', 'error')
+        return redirect(url_for('main.dashboard_project_environments', project_id=project_id))
+    from dbkamp.db import create_environment
+    create_environment(project_id, name, target)
+    flash('Environment created.', 'success')
+    return redirect(url_for('main.dashboard_project_environments', project_id=project_id))
+
+
+@main.route('/dashboard/environments/<int:env_id>/vars', methods=['POST'])
+def dashboard_set_env_var(env_id):
+    if not _require_login():
+        return redirect(url_for('main.login'))
+    key = request.form.get('key')
+    value = request.form.get('value')
+    if not key:
+        flash('Key required.', 'error')
+        return redirect(request.referrer or url_for('main.dashboard'))
+    from dbkamp.db import set_env_var
+    set_env_var(env_id, key, value)
+    flash('Environment variable saved.', 'success')
+    return redirect(request.referrer or url_for('main.dashboard'))
 
 
 @main.route('/dashboard/security')

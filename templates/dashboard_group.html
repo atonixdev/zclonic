@@ -1,5 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container" style="max-width:1000px">
+  <div class="page-heading">
+    <h2>Groups</h2>
+    <p class="muted">Team and group settings. Create groups, invite members, and link projects.</p>
+  </div>
+
+  <div class="card">
+    <h3>Create a new group</h3>
+    <form action="{{ url_for('main.dashboard_group_create') }}" method="post">
+      <label>Group name</label>
+      <input name="name" />
+      <label>Description</label>
+      <textarea name="description"></textarea>
+      <div style="margin-top:0.5rem">
+        <button class="btn btn-primary" type="submit">Create group</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h3>Your groups</h3>
+    {% if groups and groups|length > 0 %}
+      <ul>
+        {% for g in groups %}
+          <li><a href="{{ url_for('main.dashboard_group_view', group_id=g.id) }}">{{ g.name }}</a> — <span class="muted">{{ g.description }}</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="muted">You are not a member of any groups yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
 <div class="container">
   <div class="card">
     <h1>Group</h1>

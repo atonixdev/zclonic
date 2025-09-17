@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-    <div class="container">
+    <div class="container" style="max-width:1100px">
         <div class="row" style="align-items:flex-start">
             <aside class="dashboard-sidebar" aria-label="Dashboard navigation" style="width:260px;flex:0 0 260px">
                 <nav>
@@ -30,11 +30,16 @@
                     <p class="muted">Quick actions and recent activity.</p>
 
                     <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem">
+                        {% if user and user.company %}
                         <a class="btn btn-primary" href="{{ url_for('main.upload_get') }}">Upload data</a>
+                        {% else %}
+                        <a class="btn btn-primary" href="{{ url_for('main.complete_profile') }}">Get Started — It's free</a>
+                        {% endif %}
                         <a class="btn" href="{{ url_for('main.complete_profile') }}">Complete profile</a>
                         <a class="btn" href="{{ url_for('main.logout') }}">Logout</a>
                     </div>
 
+                    {% if user and user.company %}
                     <section style="margin-top:1.25rem">
                         <h2>Upload a Document</h2>
                         <form action="/upload" method="post" enctype="multipart/form-data">
@@ -42,6 +47,12 @@
                                 <button class="btn" type="submit">Process</button>
                         </form>
                     </section>
+                    {% else %}
+                    <section style="margin-top:1.25rem">
+                        <h2>Upload a Document</h2>
+                        <p class="muted">Uploading documents is available after you complete your company information. This helps us associate uploads with your organization and apply proper processing rules.</p>
+                    </section>
+                    {% endif %}
 
                     {% if result %}
                     <div class="result" style="margin-top:1rem">
@@ -52,7 +63,14 @@
 
                     <section style="margin-top:1.5rem">
                         <h3>Recent activity</h3>
-                        <div class="muted">No activity yet. Your uploads and analysis will appear here.</div>
+                        {% if false %}
+                            <!-- placeholder: real activity stream goes here when implemented -->
+                            <ul>
+                                <li>Uploaded sample.txt — Indexed 3 chunks</li>
+                            </ul>
+                        {% else %}
+                            <div class="muted">No activity yet. Your uploads and analysis will appear here.</div>
+                        {% endif %}
                     </section>
                 </div>
             </main>

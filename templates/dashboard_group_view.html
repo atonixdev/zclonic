@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="max-width:1000px">
+  <div class="page-heading">
+    <h2>Group details</h2>
+    <p class="muted">Manage members and projects for this group.</p>
+  </div>
+
+  <div class="grid" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem">
+    <div>
+      <div class="card">
+        <h3>Members</h3>
+        {% if members and members|length > 0 %}
+          <table style="width:100%">
+            <thead><tr><th>User</th><th>Role</th><th></th></tr></thead>
+            <tbody>
+            {% for m in members %}
+              <tr><td>{{ m.full_name or m.email }}</td><td>{{ m.role }}</td><td></td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="muted">No members yet.</div>
+        {% endif %}
+
+        <h4 style="margin-top:1rem">Add member</h4>
+        <form action="{{ url_for('main.dashboard_group_add_member', group_id=group_id) }}" method="post">
+          <label>Email</label>
+          <input name="email" />
+          <label>Role</label>
+          <select name="role">
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="director">Director</option>
+            <option value="operator">Operator</option>
+            <option value="member">Member</option>
+          </select>
+          <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Add member</button></div>
+        </form>
+      </div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h4>Linked projects</h4>
+        {% if projects and projects|length > 0 %}
+          <ul>
+            {% for p in projects %}
+              <li>{{ p.project_name }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="muted">No projects linked yet.</div>
+        {% endif %}
+
+        <h4 style="margin-top:1rem">Link a project</h4>
+        <form action="{{ url_for('main.dashboard_group_link_project', group_id=group_id) }}" method="post">
+          <label>Project name</label>
+          <input name="project_name" />
+          <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Link project</button></div>
+        </form>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

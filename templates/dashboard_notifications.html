@@ -1,10 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <div class="card">
-    <h1>Notifications</h1>
+<div class="container" style="max-width:900px">
+  <div class="page-heading">
+    <h2>Notifications</h2>
     <p class="muted">Manage notification preferences and history.</p>
-    <p>This is a placeholder page for Notifications.</p>
+  </div>
+
+  <div class="card">
+    <h3>Preferences</h3>
+    <form method="post">
+      <label><input type="checkbox" name="notify_email" value="1" {% if prefs and prefs.notify_email %}checked{% endif %}/> Email notifications</label>
+      <label style="display:block;margin-top:0.5rem">Digest frequency
+        <select name="notify_digest">
+          <option value="daily" {% if prefs and prefs.notify_digest=='daily' %}selected{% endif %}>Daily</option>
+          <option value="weekly" {% if prefs and prefs.notify_digest=='weekly' %}selected{% endif %}>Weekly</option>
+          <option value="monthly" {% if prefs and prefs.notify_digest=='monthly' %}selected{% endif %}>Monthly</option>
+        </select>
+      </label>
+      <label style="display:block;margin-top:0.5rem">Webhook URL (optional)
+        <input type="url" name="notify_webhook" value="{{ prefs.notify_webhook if prefs else '' }}" placeholder="https://example.com/hooks/zclonic" />
+      </label>
+      <div style="margin-top:0.75rem">
+        <button class="btn btn-primary" type="submit">Save preferences</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h3>Notification history</h3>
+    <div class="muted">No notifications yet. When the system sends alerts, they will appear here.</div>
   </div>
 </div>
 {% endblock %}

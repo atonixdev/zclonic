@@ -1,5 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container" style="max-width:900px">
+  <div class="page-heading">
+    <h2>Environments</h2>
+    <p class="muted">Deployment environments and configuration. Select a project to manage its environments.</p>
+  </div>
+
+  <div class="card">
+    <h3>Your projects</h3>
+    {% if projects and projects|length > 0 %}
+      <ul>
+        {% for p in projects %}
+          <li><a href="{{ url_for('main.dashboard_project_environments', project_id=p.id) }}">{{ p.name }}</a> — <span class="muted">{{ p.repo_url }}</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="muted">No projects found. Create a project first.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
 <div class="container">
   <div class="card">
     <h1>Environment</h1>

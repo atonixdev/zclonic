@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="max-width:1000px">
+  <div class="page-heading">
+    <h2>Environments for {{ project.name }}</h2>
+    <p class="muted">Create environments (dev/staging/prod), set environment variables, and link deployment targets.</p>
+  </div>
+
+  <div class="card">
+    <h3>Create environment</h3>
+    <form action="{{ url_for('main.dashboard_create_environment', project_id=project.id) }}" method="post">
+      <label>Name</label>
+      <input name="name" placeholder="staging" />
+      <label>Target (e.g., k8s cluster or URL)</label>
+      <input name="target" placeholder="https://k8s.example.com" />
+      <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Create environment</button></div>
+    </form>
+  </div>
+
+  <div class="grid" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-top:1rem">
+    <div>
+      <div class="card">
+        <h3>Environments</h3>
+        {% if environments and environments|length > 0 %}
+          <ul>
+            {% for e in environments %}
+              <li><strong>{{ e.name }}</strong> — <span class="muted">{{ e.target }}</span>
+                <div style="margin-top:0.25rem">
+                  <form action="{{ url_for('main.dashboard_set_env_var', env_id=e.id) }}" method="post" style="display:flex;gap:0.5rem">
+                    <input name="key" placeholder="KEY" />
+                    <input name="value" placeholder="value" />
+                    <button class="btn" type="submit">Set</button>
+                  </form>
+                </div>
+                {% if vars_map[e.id] and vars_map[e.id]|length > 0 %}
+                  <ul style="margin-top:0.5rem">
+                    {% for v in vars_map[e.id] %}
+                      <li><code>{{ v.var_key }}</code> = <code>{{ v.var_value }}</code></li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="muted">No environments yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h4>Deployment</h4>
+        <p class="muted">When ready you can connect your CI/CD pipeline or run deployment scripts for the chosen environment.</p>
+        <p><a class="btn" href="#">Connect CI/CD</a></p>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

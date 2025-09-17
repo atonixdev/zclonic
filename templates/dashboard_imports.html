@@ -1,16 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <div class="card">
-    <h1>Operation Import history</h1>
+<div class="container" style="max-width:1000px">
+  <div class="page-heading">
+    <h2>Operation Import history</h2>
     <p class="muted">Uploads and import logs.</p>
-    <p>This is a placeholder page for import history.</p>
-    <hr>
+  </div>
+
+  <div class="card">
     <h3>Index a CSV for AI retrieval</h3>
     <form action="{{ url_for('main.dashboard_index') }}" method="post" enctype="multipart/form-data">
       <input type="file" name="file" accept=".csv">
       <button class="btn" type="submit">Upload & Index</button>
     </form>
   </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h3>Recent imports</h3>
+    {% if uploads and uploads|length > 0 %}
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr><th>File</th><th>Status</th><th>Chunks</th><th>Message</th><th>When</th></tr>
+        </thead>
+        <tbody>
+        {% for u in uploads %}
+          <tr>
+            <td>{{ u.filename }}</td>
+            <td>{{ u.status }}</td>
+            <td>{{ u.chunks_indexed or 0 }}</td>
+            <td>{{ u.message or '' }}</td>
+            <td>{{ u.created_at }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="muted">No imports yet. Upload a CSV to start indexing for AI retrieval.</div>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}

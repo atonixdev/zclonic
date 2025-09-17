@@ -1,10 +1,65 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <div class="card">
-    <h1>Account setting</h1>
+<div class="container" style="max-width:1100px">
+  <div class="page-heading">
+    <h2>Account settings</h2>
     <p class="muted">Manage your account information and credentials.</p>
-    <p>This is a placeholder page for Account settings.</p>
+  </div>
+
+  <div class="grid" style="display:grid;grid-template-columns:1fr 320px;gap:1rem">
+    <div>
+      <div class="card">
+        <h3>Profile</h3>
+        <form action="{{ url_for('main.complete_profile') }}" method="post">
+          <label>Full name</label>
+          <input name="full_name" type="text" value="{{ user.full_name if user and user.full_name else '' }}" />
+          <label>Company</label>
+          <input name="company" type="text" value="{{ user.company if user and user.company else '' }}" />
+          <label>Phone</label>
+          <input name="phone" type="text" value="{{ user.phone if user and user.phone else '' }}" />
+          <div style="margin-top:0.75rem">
+            <button class="btn btn-primary" type="submit">Save profile</button>
+            <a class="btn" href="{{ url_for('main.dashboard') }}">Cancel</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <h3>Change password</h3>
+        <form action="{{ url_for('main.dashboard_change_password') }}" method="post">
+          <label>Current password</label>
+          <input name="old_password" type="password" autocomplete="current-password" />
+          <label>New password</label>
+          <input name="new_password" type="password" autocomplete="new-password" />
+          <label>Confirm new password</label>
+          <input name="confirm_password" type="password" />
+          <div style="margin-top:0.75rem">
+            <button class="btn btn-primary" type="submit">Change password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h4>Connected accounts</h4>
+        <p class="muted">Link or unlink social logins.</p>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li><a href="{{ url_for('main.oauth_login', provider='github') }}">Connect GitHub</a></li>
+          <li><a href="{{ url_for('main.oauth_login', provider='gitlab') }}">Connect GitLab</a></li>
+          <li><a href="{{ url_for('main.oauth_login', provider='linkedin') }}">Connect LinkedIn</a></li>
+        </ul>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <h4>API & tokens</h4>
+        <p class="muted">Create and manage API tokens for programmatic access.</p>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <a class="btn" href="#">Create token</a>
+          <a class="btn" href="#">Revoke tokens</a>
+        </div>
+      </div>
+    </aside>
   </div>
 </div>
 {% endblock %}

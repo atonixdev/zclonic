@@ -12,7 +12,7 @@ from pathlib import Path
 import json
 import os
 import numpy as np
-import pandas as pd
+_pd = None
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -88,8 +88,15 @@ def index_csv(path: str, text_fields=None, chunk_size=500, overlap=50, id_field=
     The function will create text chunks from the chosen fields and build a FAISS index.
     Returns number of chunks indexed.
     """
+    global _pd
+    if _pd is None:
+        try:
+            import pandas as pd
+            _pd = pd
+        except Exception:
+            raise RuntimeError('pandas is required for CSV indexing')
     model = _ensure_model()
-    df = pd.read_csv(path)
+    df = _pd.read_csv(path)
     records = []
     for idx, row in df.iterrows():
         if text_fields:
@@ -112,6 +119,37 @@ def index_csv(path: str, text_fields=None, chunk_size=500, overlap=50, id_field=
         return 0
     texts = [r['text'] for r in records]
     embeddings = model.encode(texts, show_progress_bar=True)
+    embeddings = np.array(embeddings).astype('float32')
+    dim = embeddings.shape[1]
+    if faiss is None:
+        raise RuntimeError('faiss not installed')
+    index = faiss.IndexFlatL2(dim)
+    index.add(embeddings)
+    metadata = records
+    _save_index(index, embeddings, metadata)
+    return len(records)
+
+
+def index_text(path: str, chunk_size=1000, overlap=200, source_name=None):
+    """
+    Index a plain text file. Splits by character windows into chunks and indexes them.
+    Returns number of chunks indexed.
+    """
+    model = _ensure_model()
+    with open(path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    if not content:
+        return 0
+    records = []
+    L = len(content)
+    start = 0
+    while start < L:
+        end = start + chunk_size
+        chunk = content[start:end]
+        records.append({'text': chunk, 'source': source_name or Path(path).name})
+        start = end - overlap
+    texts = [r['text'] for r in records]
+    embeddings = model.encode(texts, show_progress_bar=False)
     embeddings = np.array(embeddings).astype('float32')
     dim = embeddings.shape[1]
     if faiss is None:

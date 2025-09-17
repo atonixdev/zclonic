@@ -1,6 +1,29 @@
 def process_document(file):
+    # Try to detect type by filename attribute (Flask FileStorage provides .filename)
+    filename = getattr(file, 'filename', None) or 'upload.txt'
+    name = str(filename)
+    # If it's a text file, save to /tmp and index it
+    if name.lower().endswith('.txt'):
+        import tempfile
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
+        data = file.read()
+        # ensure bytes -> text
+        try:
+            text = data.decode('utf-8')
+        except Exception:
+            text = data.decode('latin-1')
+        tmp.write(text.encode('utf-8'))
+        tmp.flush()
+        tmp_path = tmp.name
+        tmp.close()
+        try:
+            from models.retriever import index_text
+            n = index_text(tmp_path, source_name=name)
+            return f"Indexed {n} chunks from {name}."
+        except Exception as e:
+            return f"Indexing failed: {e}"
+    # fallback: read and return a simple processed summary
     text = file.read().decode('utf-8')
-    # Placeholder for AI logic
     summary = f"Processed {len(text)} characters."
     return summary
 

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="max-width:1000px">
+  <div class="page-heading">
+    <h2>Project: {{ project.name }}</h2>
+    <p class="muted">Repository, orchestration, issues, milestones, and configuration.</p>
+  </div>
+
+  <div class="grid" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem">
+    <div>
+      <div class="card">
+        <h3>Repository</h3>
+        <p>{{ project.repo_url or 'No repository configured' }}</p>
+        <h3>Orchestration</h3>
+        <p>{{ project.orchestration or 'Not set' }}</p>
+        <h3>Config</h3>
+        <form action="{{ url_for('main.dashboard_project_update_config', project_id=project.id) }}" method="post">
+          <textarea name="config" style="width:100%;height:160px">{{ project.config or '' }}</textarea>
+          <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Save config</button></div>
+        </form>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <h3>Issues</h3>
+        <form action="{{ url_for('main.dashboard_project_create_issue', project_id=project.id) }}" method="post">
+          <label>Title</label>
+          <input name="title" />
+          <label>Body</label>
+          <textarea name="body"></textarea>
+          <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Create issue</button></div>
+        </form>
+
+        {% if issues and issues|length > 0 %}
+          <ul style="margin-top:1rem">
+            {% for it in issues %}
+              <li><strong>{{ it.title }}</strong> — <span class="muted">{{ it.status }}</span><div>{{ it.body }}</div></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="muted">No issues yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h4>Milestones</h4>
+        <form action="{{ url_for('main.dashboard_project_create_milestone', project_id=project.id) }}" method="post">
+          <label>Title</label>
+          <input name="title" />
+          <label>Due date</label>
+          <input name="due_date" type="date" />
+          <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Create milestone</button></div>
+        </form>
+
+        {% if milestones and milestones|length > 0 %}
+          <ul style="margin-top:0.75rem">
+            {% for m in milestones %}
+              <li>{{ m.title }} — due {{ m.due_date or 'n/a' }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="muted">No milestones yet.</div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

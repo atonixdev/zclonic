@@ -1,10 +1,62 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container">
-  <div class="card">
-    <h1>General</h1>
-    <p class="muted">Account overview and basic settings.</p>
-    <p>This is a placeholder page for the General section of your dashboard.</p>
+<div class="container" style="max-width:1100px">
+  <div class="page-heading">
+    <h2>General</h2>
+    <p class="muted">Account overview and basic settings</p>
+  </div>
+
+  <div class="grid" style="display:grid;grid-template-columns:2fr 1fr;gap:1rem">
+    <div>
+      <div class="card">
+        <h3>Account information</h3>
+        <dl>
+          <dt>Email</dt>
+          <dd>{{ user.email if user else '—' }}</dd>
+          <dt>Full name</dt>
+          <dd>{{ user.full_name if user and user.full_name else 'Not provided' }}</dd>
+          <dt>Company</dt>
+          <dd>{{ user.company if user and user.company else 'Not provided' }}</dd>
+          <dt>Phone</dt>
+          <dd>{{ user.phone if user and user.phone else 'Not provided' }}</dd>
+        </dl>
+
+        <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+          <a class="btn btn-primary" href="{{ url_for('main.complete_profile') }}">Edit profile</a>
+          {% if user and user.company %}
+            <a class="btn" href="{{ url_for('main.upload_get') }}">Upload a document</a>
+          {% else %}
+            <a class="btn" href="{{ url_for('main.complete_profile') }}">Add company info to enable uploads</a>
+          {% endif %}
+          <a class="btn" href="{{ url_for('main.logout') }}">Logout</a>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <h3>Security</h3>
+        <p class="muted">Manage your account security settings and API tokens.</p>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+          <a class="btn" href="#">Change password</a>
+          <a class="btn" href="#">Manage API keys</a>
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <h4>Quick actions</h4>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.5rem">
+          <li><a class="btn btn-ghost" href="{{ url_for('main.complete_profile') }}">Complete profile</a></li>
+          <li><a class="btn btn-ghost" href="{{ url_for('main.upload_get') }}">Upload document</a></li>
+          <li><a class="btn btn-ghost" href="{{ url_for('main.dashboard_imports') }}">Import history</a></li>
+        </ul>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <h4>Recent activity</h4>
+        <div class="muted">No activity yet. Your uploads and analysis will appear here.</div>
+      </div>
+    </aside>
   </div>
 </div>
 {% endblock %}

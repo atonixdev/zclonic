@@ -1,5 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="container" style="max-width:1000px">
+  <div class="page-heading">
+    <h2>Projects</h2>
+    <p class="muted">Project-level configurations and resources: orchestration, repo, issues, milestones.</p>
+  </div>
+
+  <div class="card">
+    <h3>Create a project</h3>
+    <form action="{{ url_for('main.dashboard_project_create') }}" method="post">
+      <label>Project name</label>
+      <input name="name" />
+      <label>Repository URL</label>
+      <input name="repo_url" />
+      <label>Orchestration (e.g., Kubernetes, Docker Compose)</label>
+      <input name="orchestration" />
+      <label>Config (JSON/YAML)</label>
+      <textarea name="config" placeholder='{"replicas":2}'></textarea>
+      <div style="margin-top:0.5rem"><button class="btn btn-primary" type="submit">Create project</button></div>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h3>Your projects</h3>
+    {% if projects and projects|length > 0 %}
+      <ul>
+        {% for p in projects %}
+          <li><a href="{{ url_for('main.dashboard_project_view', project_id=p.id) }}">{{ p.name }}</a> — <span class="muted">{{ p.repo_url }}</span></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="muted">No projects created yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
 <div class="container">
   <div class="card">
     <h1>Project</h1>
