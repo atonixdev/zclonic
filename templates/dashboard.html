@@ -19,6 +19,12 @@
             </aside>
 
             <main style="flex:1;min-width:0">
+                <div class="page-heading" role="region" aria-label="Dashboard heading" style="margin-bottom:1rem">
+                    <div class="container" style="padding:0">
+                        <h2 style="margin:0;font-size:1.25rem;font-weight:700">Dashboard</h2>
+                        <p class="muted" style="margin:0.25rem 0 0">Overview and account tools</p>
+                    </div>
+                </div>
                 <div class="card">
                     <h1>Welcome back{% if session.get('user_email') %}, {{ session.get('user_email').split('@')[0]|capitalize }}{% endif %}</h1>
                     <p class="muted">Quick actions and recent activity.</p>
