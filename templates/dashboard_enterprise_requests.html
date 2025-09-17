@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="card">
+    <h1>Enterprise requests</h1>
+    <p class="muted">Recent enterprise inquiries submitted via the site.</p>
+    <table class="table">
+      <thead><tr><th>Company</th><th>Contact</th><th>Plan</th><th>Message</th><th>Submitted</th></tr></thead>
+      <tbody>
+        {% for a in accounts %}
+        <tr>
+          <td>{{ a.company }}</td>
+          <td>{{ a.contact_name }}<br/><small>{{ a.contact_email }}</small></td>
+          <td>{{ a.plan_interest }}</td>
+          <td><pre style="white-space:pre-wrap">{{ a.message }}</pre></td>
+          <td>{{ a.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

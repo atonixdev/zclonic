@@ -57,6 +57,9 @@ def init_db():
     ensure_audit_table()
     # employees and activity logs
     ensure_employees_table()
+    # ssh keys
+    ensure_ssh_keys_table()
+    ensure_enterprise_tables()
 
 
 def ensure_api_tokens_table():
@@ -241,6 +244,113 @@ def ensure_employees_table():
     ''')
     conn.commit()
     conn.close()
+
+
+def ensure_ssh_keys_table():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS ssh_keys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT,
+        public_key TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def add_ssh_key(user_id: int, title: str, public_key: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO ssh_keys (user_id, title, public_key) VALUES (?, ?, ?)', (user_id, title, public_key))
+    conn.commit()
+    kid = cur.lastrowid
+    conn.close()
+    try:
+        record_audit('ssh.key.add', actor_user_id=user_id, details=f'id={kid}, title={title}')
+    except Exception:
+        pass
+    return kid
+
+
+def list_ssh_keys(user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id, title, public_key, created_at FROM ssh_keys WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def remove_ssh_key(key_id: int, user_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id FROM ssh_keys WHERE id = ? AND user_id = ?', (key_id, user_id))
+    if not cur.fetchone():
+        conn.close()
+        return False
+    cur.execute('DELETE FROM ssh_keys WHERE id = ?', (key_id,))
+    conn.commit()
+    conn.close()
+    try:
+        record_audit('ssh.key.remove', actor_user_id=user_id, details=f'id={key_id}')
+    except Exception:
+        pass
+    return True
+
+
+def ensure_enterprise_tables():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS enterprise_accounts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company TEXT NOT NULL,
+        contact_email TEXT NOT NULL,
+        contact_name TEXT,
+        plan_interest TEXT,
+        message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS support_tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        enterprise_id INTEGER,
+        title TEXT NOT NULL,
+        body TEXT,
+        status TEXT DEFAULT 'open',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    conn.commit()
+    conn.close()
+
+
+def create_enterprise_account(company: str, contact_email: str, contact_name: str = None, plan_interest: str = None, message: str = None):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO enterprise_accounts (company, contact_email, contact_name, plan_interest, message) VALUES (?, ?, ?, ?, ?)', (company, contact_email, contact_name, plan_interest, message))
+    conn.commit()
+    eid = cur.lastrowid
+    conn.close()
+    try:
+        record_audit('enterprise.request', actor_user_id=None, details=f'id={eid}, company={company}')
+    except Exception:
+        pass
+    return eid
+
+
+def list_enterprise_accounts(limit: int = 200):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id, company, contact_email, contact_name, plan_interest, message, created_at FROM enterprise_accounts ORDER BY created_at DESC LIMIT ?', (limit,))
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def create_environment(project_id: int, name: str, target: str = None):

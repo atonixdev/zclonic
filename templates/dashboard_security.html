@@ -126,6 +126,44 @@
 
     <hr />
 
+    <section aria-labelledby="sec-ssh">
+      <h2 id="sec-ssh">SSH Keys</h2>
+      <p class="muted">Add and manage SSH public keys for git or shell access.</p>
+      <div>
+        <form id="ssh-add-form" class="form-inline" onsubmit="return false;">
+          <label style="display:block;">
+            Title
+            <input id="ssh-title" type="text" placeholder="My laptop key" />
+          </label>
+          <label style="display:block; margin-top:0.5rem;">
+            Public key
+            <textarea id="ssh-public-key" rows="3" placeholder="ssh-rsa AAAA..." style="width:100%"></textarea>
+          </label>
+          <div class="actions" style="margin-top:0.5rem;">
+            <button id="ssh-add-btn" class="btn">Add SSH key</button>
+          </div>
+        </form>
+
+        <div id="ssh-keys-list" style="margin-top:1rem;">
+          <h4>Your keys</h4>
+          <div class="muted" id="ssh-keys-empty">No keys yet.</div>
+          <ul id="ssh-keys-ul"></ul>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-graph">
+      <h2 id="sec-graph">Security Graph</h2>
+      <p class="muted">Quick visual summary of recent security events (audit, token activity, access changes).</p>
+      <div id="security-graph" style="height:160px; display:flex; gap:8px; align-items:end;">
+        <!-- Bars will be injected here by JS -->
+      </div>
+    </section>
+
+    <hr />
+
     <section aria-labelledby="sec-access">
       <h2 id="sec-access">Access Control & Roles</h2>
       <p class="muted">Control who can view and modify resources in your organization.</p>

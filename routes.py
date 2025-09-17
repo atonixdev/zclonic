@@ -231,6 +231,43 @@ def enterprise():
     return render_template('enterprise.html')
 
 
+@main.route('/enterprise/request', methods=['GET', 'POST'])
+def enterprise_request():
+    if request.method == 'POST':
+        company = request.form.get('company')
+        contact_email = request.form.get('email')
+        contact_name = request.form.get('name')
+        plan = request.form.get('plan')
+        message = request.form.get('message')
+        if not company or not contact_email:
+            flash('Company and contact email are required.', 'error')
+            return render_template('enterprise_request.html', company=company, email=contact_email, name=contact_name, plan=plan, message=message)
+        from dbkamp.db import create_enterprise_account
+        create_enterprise_account(company, contact_email, contact_name, plan, message)
+        flash('Thanks — we received your request. Our enterprise team will reach out shortly.', 'success')
+        return redirect(url_for('main.enterprise'))
+    return render_template('enterprise_request.html')
+
+
+@main.route('/dashboard/enterprise-requests')
+def dashboard_enterprise_requests():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_enterprise_requests')))
+    user_id = session.get('user_id')
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT is_admin FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row or not row['is_admin']:
+        flash('Admin access required.', 'error')
+        return redirect(url_for('main.dashboard'))
+    from dbkamp.db import list_enterprise_accounts
+    accounts = list_enterprise_accounts()
+    return render_template('dashboard_enterprise_requests.html', accounts=accounts)
+
+
 @main.route('/pricing')
 def pricing():
     return render_template('pricing.html')
@@ -778,6 +815,58 @@ def api_chat():
     return {'reply': reply}
 
 
+@main.route('/api/ssh-keys', methods=['GET', 'POST'])
+def api_ssh_keys():
+    if not _require_login():
+        return {'error': 'login required'}, 403
+    user_id = session.get('user_id')
+    from dbkamp.db import list_ssh_keys, add_ssh_key
+    if request.method == 'POST':
+        data = request.get_json() or {}
+        title = data.get('title') or 'key'
+        public_key = data.get('public_key')
+        if not public_key:
+            return {'error': 'public_key required'}, 400
+        kid = add_ssh_key(user_id, title, public_key)
+        return {'id': kid, 'title': title}
+    # GET
+    keys = list_ssh_keys(user_id)
+    return {'keys': keys}
+
+
+@main.route('/api/ssh-keys/revoke', methods=['POST'])
+def api_ssh_keys_revoke():
+    if not _require_login():
+        return {'error': 'login required'}, 403
+    data = request.get_json() or {}
+    key_id = data.get('key_id')
+    if not key_id:
+        return {'error': 'key_id required'}, 400
+    user_id = session.get('user_id')
+    from dbkamp.db import remove_ssh_key
+    ok = remove_ssh_key(int(key_id), user_id)
+    if not ok:
+        return {'error': 'unable to remove key'}, 400
+    return {'ok': True}
+
+
+@main.route('/api/security/graph')
+def api_security_graph():
+    # Return a small summary used to render an activity/incident graph in the UI
+    if not _require_login():
+        return {'error': 'login required'}, 403
+    from dbkamp.db import list_audit_logs
+    logs = list_audit_logs(200)
+    # simple aggregation: count events by type (top 6)
+    counts = {}
+    for l in logs:
+        t = l.get('event_type') or 'other'
+        counts[t] = counts.get(t, 0) + 1
+    # return top entries
+    items = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:6]
+    return {'items': [{'event_type': k, 'count': v} for k, v in items]}
+
+
 @main.route('/api/exec', methods=['POST'])
 def api_exec():
     # allow logged-in users to run a very small, safe whitelist of commands
@@ -913,6 +1002,69 @@ def api_create_token():
         return {'token': token_plain, 'name': name}
     except Exception as e:
         return {'error': str(e)}, 500
+
+
+@main.route('/api/stripe/create-checkout-session', methods=['POST'])
+def api_stripe_create_checkout():
+    # Create a Stripe Checkout Session for a selected plan
+    data = request.get_json() or {}
+    plan = data.get('plan') or 'pro'
+    # Map plan to Stripe price IDs via config
+    try:
+        import stripe
+    except Exception:
+        return {'error': 'stripe library not installed'}, 500
+    stripe.api_key = current_app.config.get('STRIPE_SECRET_KEY')
+    price_map = {
+        'pro': current_app.config.get('STRIPE_PRICE_PRO'),
+        'team': current_app.config.get('STRIPE_PRICE_TEAM')
+    }
+    price = price_map.get(plan)
+    if not price:
+        return {'error': 'plan not configured'}, 400
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            mode='subscription',
+            line_items=[{'price': price, 'quantity': 1}],
+            success_url=request.host_url + 'dashboard?checkout=success',
+            cancel_url=request.host_url + 'pricing?checkout=cancel'
+        )
+        return {'sessionId': session.id, 'url': session.url}
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+@main.route('/api/stripe/webhook', methods=['POST'])
+def api_stripe_webhook():
+    # Minimal webhook receiver. Configure STRIPE_WEBHOOK_SECRET in env for signature verification.
+    payload = request.data
+    sig_header = request.headers.get('Stripe-Signature')
+    webhook_secret = current_app.config.get('STRIPE_WEBHOOK_SECRET')
+    try:
+        import stripe
+    except Exception:
+        return {'error': 'stripe library not installed'}, 500
+    stripe.api_key = current_app.config.get('STRIPE_SECRET_KEY')
+    event = None
+    try:
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        else:
+            event = stripe.Event.construct_from(request.get_json(), stripe.api_key)
+    except Exception as e:
+        return {'error': str(e)}, 400
+    # Handle checkout.session.completed for example
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        # TODO: persist subscription and customer info in DB
+        try:
+            # Example: record audit log
+            from dbkamp.db import record_audit
+            record_audit('billing.checkout.completed', actor_user_id=session.get('client_reference_id'), details=str(session.get('id')))
+        except Exception:
+            pass
+    return {'received': True}
 
 
 @main.route('/api/revoke-token', methods=['POST'])

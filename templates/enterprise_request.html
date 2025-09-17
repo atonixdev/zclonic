@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="card">
+    <h1>Enterprise inquiry</h1>
+    <p class="muted">Tell us about your needs and we'll get back to you to discuss deployments, SLAs, and integrations.</p>
+    <form method="post">
+      <label>Company
+        <input type="text" name="company" value="{{ company or '' }}" required />
+      </label>
+      <label>Contact name
+        <input type="text" name="name" value="{{ name or '' }}" />
+      </label>
+      <label>Contact email
+        <input type="email" name="email" value="{{ email or '' }}" required />
+      </label>
+      <label>Plan of interest
+        <select name="plan">
+          <option value="on-prem">On-prem</option>
+          <option value="dedicated">Dedicated SLA</option>
+          <option value="integration">Custom integration</option>
+        </select>
+      </label>
+      <label>Message
+        <textarea name="message" rows="4">{{ message or '' }}</textarea>
+      </label>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

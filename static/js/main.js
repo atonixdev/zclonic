@@ -330,4 +330,99 @@ document.addEventListener('DOMContentLoaded', function(){
       }).catch(err=>{ alert('Request failed: ' + err); });
     });
   });
+
+  // SSH keys: create, list, revoke
+  const sshAddBtn = document.getElementById('ssh-add-btn');
+  const sshTitle = document.getElementById('ssh-title');
+  const sshPublicKey = document.getElementById('ssh-public-key');
+  const sshKeysUl = document.getElementById('ssh-keys-ul');
+  const sshKeysEmpty = document.getElementById('ssh-keys-empty');
+
+  async function fetchSshKeys(){
+    try{
+      const res = await fetch('/api/ssh-keys');
+      if(!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      const keys = data.keys || [];
+      sshKeysUl.innerHTML = '';
+      if(keys.length === 0){
+        if(sshKeysEmpty) sshKeysEmpty.style.display = 'block';
+        return;
+      }
+      if(sshKeysEmpty) sshKeysEmpty.style.display = 'none';
+      keys.forEach(function(k){
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${k.title || 'key'}</strong> <span class="muted" style="margin-left:0.5rem">${k.created_at}</span> <button class="btn small revoke-ssh" data-key-id="${k.id}" style="margin-left:0.5rem">Revoke</button>`;
+        sshKeysUl.appendChild(li);
+      });
+      // attach revoke handlers
+      document.querySelectorAll('.revoke-ssh').forEach(function(b){
+        b.addEventListener('click', async function(e){
+          e.preventDefault();
+          const id = b.getAttribute('data-key-id');
+          if(!confirm('Revoke this SSH key?')) return;
+          try{
+            const r = await fetch('/api/ssh-keys/revoke', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({key_id: id})});
+            const j = await r.json();
+            if(j.ok){
+              b.disabled = true;
+              b.textContent = 'Revoked';
+              fetchSshKeys();
+            } else {
+              alert('Unable to revoke: ' + (j.error||'unknown'));
+            }
+          }catch(err){ alert('Request failed: ' + err); }
+        });
+      });
+    }catch(err){ console.warn('SSH fetch failed', err); }
+  }
+
+  if(sshAddBtn){
+    sshAddBtn.addEventListener('click', async function(e){
+      e.preventDefault();
+      const title = (sshTitle && sshTitle.value && sshTitle.value.trim()) || 'key';
+      const key = sshPublicKey && sshPublicKey.value && sshPublicKey.value.trim();
+      if(!key){ alert('Public key is required'); return; }
+      sshAddBtn.disabled = true;
+      try{
+        const res = await fetch('/api/ssh-keys', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({title: title, public_key: key})});
+        const j = await res.json();
+        sshAddBtn.disabled = false;
+        if(j.error){ alert('Error: ' + j.error); return; }
+        sshTitle.value = '';
+        sshPublicKey.value = '';
+        fetchSshKeys();
+        alert('SSH key added');
+      }catch(err){ sshAddBtn.disabled = false; alert('Request failed: ' + err); }
+    });
+    // initial load
+    fetchSshKeys();
+  }
+
+  // Security graph: fetch small summary and render simple bars
+  async function loadSecurityGraph(){
+    try{
+      const res = await fetch('/api/security/graph');
+      if(!res.ok) return;
+      const data = await res.json();
+      const items = data.items || [];
+      const container = document.getElementById('security-graph');
+      if(!container) return;
+      container.innerHTML = '';
+      const max = items.reduce((m,i)=>Math.max(m, i.count), 1) || 1;
+      items.forEach(function(it){
+        const bar = document.createElement('div');
+        bar.style.width = '14%';
+        const h = Math.max(6, Math.round((it.count / max) * 140));
+        bar.style.height = h + 'px';
+        bar.style.background = 'linear-gradient(180deg, var(--accent), rgba(0,0,0,0.05))';
+        bar.title = `${it.event_type}: ${it.count}`;
+        bar.style.borderRadius = '4px';
+        bar.style.display = 'inline-block';
+        bar.style.transition = 'height 220ms ease';
+        container.appendChild(bar);
+      });
+    }catch(err){ console.warn('Graph failed', err); }
+  }
+  loadSecurityGraph();
 });

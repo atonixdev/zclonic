@@ -23,7 +23,8 @@
           <div class="plan-badge">Popular</div>
           <h3>Pro</h3>
           <p class="muted">$29 / month — unlimited queries</p>
-          <a class="btn btn-primary" href="#">Upgrade</a>
+          <button class="btn btn-primary" id="buy-pro">Get Started — It's free</button>
+          <div style="margin-top:0.5rem; font-size:0.9rem; color:var(--muted);">Or pay with PayPal / Crypto (coming soon)</div>
         </div>
 
         <div class="plan-card">
@@ -35,5 +36,32 @@
       </div>
     </div>
   </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const buyBtn = document.getElementById('buy-pro');
+      if(buyBtn){
+        buyBtn.addEventListener('click', function(){
+          buyBtn.disabled = true;
+          fetch('/api/stripe/create-checkout-session', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({plan:'pro'})
+          }).then(r=>r.json()).then(j=>{
+            buyBtn.disabled = false;
+            if(j.error){ alert('Error: '+j.error); return; }
+            // redirect to stripe
+            if(j.url) window.location = j.url;
+            else if(j.sessionId && typeof Stripe !== 'undefined'){
+              var s = Stripe('{{ config.STRIPE_PUBLISHABLE_KEY }}');
+              s.redirectToCheckout({sessionId: j.sessionId});
+            } else {
+              alert('Checkout not available');
+            }
+          }).catch(err=>{ buyBtn.disabled = false; alert('Request failed: '+err); });
+        });
+      }
+    });
+  </script>
 
 {% endblock %}
