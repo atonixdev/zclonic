@@ -19,6 +19,7 @@ Flask-Babel
 Flask-Cors
 python-dotenv
 openai
+authlib
 alembic
 marshmallow
 python-magic

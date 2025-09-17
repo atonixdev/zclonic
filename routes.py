@@ -20,6 +20,11 @@ def inject_globals():
 
 @main.route('/')
 def dashboard():
+    # require login to view dashboard
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to access the dashboard.', 'error')
+        return redirect(url_for('main.login', next=url_for('main.dashboard')))
     return render_template('dashboard.html')
 
 @main.route('/upload', methods=['POST'])
@@ -74,11 +79,99 @@ def login():
             # If profile incomplete, redirect to complete profile
             if not user.get('full_name') or not user.get('company'):
                 return redirect(url_for('main.complete_profile'))
+            # Respect optional `next` param so we can redirect to dashboard or original page
+            next_url = request.args.get('next') or request.form.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect(url_for('main.dashboard'))
         else:
             flash('Invalid credentials.', 'error')
             return render_template('login.html')
     return render_template('login.html')
+
+
+@main.route('/login/<provider>')
+def oauth_login(provider):
+    # start oauth login flow
+    oauth = current_app.oauth
+    if provider not in oauth._registry:
+        flash('Unknown OAuth provider.', 'error')
+        return redirect(url_for('main.login'))
+    redirect_uri = url_for('main.oauth_callback', provider=provider, _external=True)
+    return oauth.create_client(provider).authorize_redirect(redirect_uri)
+
+
+@main.route('/auth/<provider>/callback')
+def oauth_callback(provider):
+    oauth = current_app.oauth
+    client = oauth.create_client(provider)
+    if not client:
+        flash('OAuth client not configured.', 'error')
+        return redirect(url_for('main.login'))
+    token = client.authorize_access_token()
+    if not token:
+        flash('Authentication failed.', 'error')
+        return redirect(url_for('main.login'))
+    # fetch basic profile information depending on provider
+    profile = {}
+    if provider == 'github':
+        profile = client.get('user').json()
+        email = profile.get('email') or (client.get('user/emails').json()[0].get('email') if client.get('user/emails') else None)
+    elif provider == 'gitlab':
+        profile = client.get('user').json()
+        email = profile.get('email')
+    elif provider == 'linkedin':
+        # LinkedIn requires separate endpoints for email and profile
+        profile = client.get('me').json()
+        email_resp = client.get('emailAddress?q=members&projection=(elements*(handle~))')
+        email = None
+        try:
+            email = email_resp.json().get('elements', [])[0].get('handle~', {}).get('emailAddress')
+        except Exception:
+            email = None
+    elif provider == 'facebook':
+        profile = client.get('me?fields=id,name,email').json()
+        email = profile.get('email')
+    else:
+        email = None
+
+    if not email:
+        flash('Could not retrieve email from provider. Please sign up with email/password.', 'error')
+        return redirect(url_for('main.signup'))
+
+    # If user exists, log them in; otherwise create an account (random password)
+    user = authenticate_user(email, '')
+    # authenticate_user expects a password; instead we'll check existence directly
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE email = ?', (email,))
+    row = cur.fetchone()
+    conn.close()
+    if row:
+        session['user_id'] = row['id']
+        session['user_email'] = row['email']
+        flash('Logged in with ' + provider.capitalize(), 'success')
+        return redirect(url_for('main.dashboard'))
+    else:
+        # create user with a random password placeholder
+        import secrets
+        pw = secrets.token_urlsafe(16)
+        created = create_user(email, pw)
+        if created:
+            # fetch new user id
+            conn = get_connection()
+            cur = conn.cursor()
+            cur.execute('SELECT * FROM users WHERE email = ?', (email,))
+            new = cur.fetchone()
+            conn.close()
+            session['user_id'] = new['id']
+            session['user_email'] = new['email']
+            flash('Account created via ' + provider.capitalize(), 'success')
+            return redirect(url_for('main.complete_profile'))
+        else:
+            flash('Unable to create account.', 'error')
+            return redirect(url_for('main.signup'))
 
 
 @main.route('/resources')
