@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container" style="max-width:1100px">
+    <div class="row" style="align-items:flex-start">
+      <aside class="dashboard-sidebar" aria-label="Dashboard navigation" style="width:260px;flex:0 0 260px">
+        <nav>
+          <ul class="sidebar-list" style="list-style:none;padding:0;margin:0">
+            <li><a href="{{ url_for('main.dashboard_general') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_general') %}active{% endif %}">General</a></li>
+            <li><a href="{{ url_for('main.dashboard_account') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_account') %}active{% endif %}">Account setting</a></li>
+            <li><a href="{{ url_for('main.dashboard_notifications') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_notifications') %}active{% endif %}">Notifications</a></li>
+            <li><a href="{{ url_for('main.dashboard_api') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_api') %}active{% endif %}">API</a></li>
+            <li><a href="{{ url_for('main.dashboard_imports') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_imports') %}active{% endif %}">Operation Import history</a></li>
+            <li><a href="{{ url_for('main.dashboard_group') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_group') %}active{% endif %}">Group</a></li>
+            <li><a href="{{ url_for('main.dashboard_project') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_project') %}active{% endif %}">Project</a></li>
+            <li><a href="{{ url_for('main.dashboard_environment') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_environment') %}active{% endif %}">Environment</a></li>
+            <li><a href="{{ url_for('main.dashboard_security') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_security') %}active{% endif %}">Security</a></li>
+            <li><a href="{{ url_for('main.dashboard_terminal') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_terminal') %}active{% endif %}">Terminal</a></li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main style="flex:1;min-width:0">
+        <div class="page-heading" role="region" aria-label="Dashboard heading" style="margin-bottom:1rem">
+          <div class="container" style="padding:0">
+            <h2 style="margin:0;font-size:1.25rem;font-weight:700">Terminal</h2>
+            <p class="muted" style="margin:0.25rem 0 0">Run safe diagnostics from the web UI</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="muted">This terminal is limited to a safe, small set of commands. Use it for quick diagnostics only.</p>
+          <div id="terminal-output" style="min-height:320px;border-radius:8px;padding:0.75rem;background:#07121a;margin-top:0.75rem;color:var(--muted);overflow:auto;font-family:monospace;font-size:0.95rem"></div>
+          <form id="terminal-form" style="display:flex;gap:0.5rem;margin-top:0.75rem">
+            <input id="terminal-input" name="cmd" placeholder="Enter command (e.g. ls -la)" autocomplete="off" style="flex:1;padding:0.6rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:inherit;font-family:monospace">
+            <button class="btn" type="submit" style="padding:0.5rem 0.9rem">Run</button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+{% endblock %}

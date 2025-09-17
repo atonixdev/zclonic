@@ -14,18 +14,29 @@
                         <li><a href="{{ url_for('main.dashboard_project') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_project') %}active{% endif %}">Project</a></li>
                         <li><a href="{{ url_for('main.dashboard_environment') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_environment') %}active{% endif %}">Environment</a></li>
                         <li><a href="{{ url_for('main.dashboard_security') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_security') %}active{% endif %}">Security</a></li>
+                        <li><a href="{{ url_for('main.dashboard_terminal') }}" class="sidebar-link {% if request.path == url_for('main.dashboard_terminal') %}active{% endif %}">Terminal</a></li>
                     </ul>
                 </nav>
             </aside>
 
             <main style="flex:1;min-width:0">
-                <div class="page-heading" role="region" aria-label="Dashboard heading" style="margin-bottom:1rem">
-                    <div class="container" style="padding:0">
+                <div class="page-heading" role="region" aria-label="Dashboard heading" style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
+                    <div style="padding:0">
                         <h2 style="margin:0;font-size:1.25rem;font-weight:700">Dashboard</h2>
                         <p class="muted" style="margin:0.25rem 0 0">Overview and account tools</p>
                     </div>
+
+                    <!-- Right-aligned dashboard search (visible to logged-in users) -->
+                    {% if session.get('user_id') %}
+                    <form class="dashboard-search" role="search" action="/search" method="get" style="display:flex;align-items:center;gap:0.5rem">
+                        <input name="q" type="search" placeholder="Search your projects, uploads, help..." aria-label="Dashboard search" style="padding:0.45rem 0.6rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);min-width:260px">
+                        <button class="btn" type="submit" style="padding:0.45rem 0.7rem">Search</button>
+                    </form>
+                    {% endif %}
                 </div>
-                <div class="card">
+                <div style="display:flex;gap:1rem;align-items:flex-start">
+                    <div style="flex:1">
+                        <div class="card">
                     <h1>Welcome back{% if session.get('user_email') %}, {{ session.get('user_email').split('@')[0]|capitalize }}{% endif %}</h1>
                     <p class="muted">Quick actions and recent activity.</p>
 
@@ -72,6 +83,27 @@
                             <div class="muted">No activity yet. Your uploads and analysis will appear here.</div>
                         {% endif %}
                     </section>
+                </div>
+                    </div>
+
+                    <!-- Right column: AI Assistant panel for logged-in users -->
+                    {% if session.get('user_id') %}
+                    <aside style="width:360px;flex:0 0 360px">
+                        <div class="card" style="position:sticky;top:96px">
+                            <div style="display:flex;align-items:center;justify-content:space-between">
+                                <h3 style="margin:0;font-size:1rem">AI Assistant</h3>
+                                <small class="muted">private to you</small>
+                            </div>
+                            <p class="muted" style="margin-top:0.45rem">Ask questions about your uploads, projects, or get quick troubleshooting help.</p>
+                            <div id="assistant-messages" style="min-height:120px;border-radius:8px;padding:0.5rem;background:rgba(255,255,255,0.01);margin-top:0.75rem;overflow:auto"></div>
+                            <form id="assistant-form" style="display:flex;gap:0.5rem;margin-top:0.75rem">
+                                <input id="assistant-input" name="q" placeholder="Ask the assistant..." autocomplete="off" style="flex:1;padding:0.5rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:inherit">
+                                <button class="btn btn-primary" type="submit" style="padding:0.45rem 0.8rem">Ask</button>
+                            </form>
+                        </div>
+                        <!-- Terminal moved to its own page: Dashboard -> Terminal -->
+                    </aside>
+                    {% endif %}
                 </div>
             </main>
         </div>

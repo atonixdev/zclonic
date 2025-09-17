@@ -329,7 +329,10 @@ def dashboard_account():
     row = cur.fetchone()
     conn.close()
     user = dict(row) if row else None
-    return render_template('dashboard_account.html', user=user)
+    # fetch tokens to display
+    from dbkamp.db import list_api_tokens
+    tokens = list_api_tokens(user_id)
+    return render_template('dashboard_account.html', user=user, tokens=tokens)
 
 
 @main.route('/dashboard/change-password', methods=['POST'])
@@ -730,6 +733,21 @@ def dashboard_security():
     return render_template('dashboard_security.html')
 
 
+@main.route('/dashboard/terminal')
+def dashboard_terminal():
+    if not _require_login():
+        return redirect(url_for('main.login', next=url_for('main.dashboard_terminal')))
+    user_id = session.get('user_id')
+    from dbkamp.db import get_connection
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    user = dict(row) if row else None
+    return render_template('dashboard_terminal.html', user=user)
+
+
 @main.route('/dashboard/admin')
 def dashboard_admin():
     if not _require_login():
@@ -758,6 +776,37 @@ def api_chat():
         return {'error': 'no prompt provided'}, 400
     reply = ai_chat(prompt, model=model)
     return {'reply': reply}
+
+
+@main.route('/api/exec', methods=['POST'])
+def api_exec():
+    # allow logged-in users to run a very small, safe whitelist of commands
+    if not _require_login():
+        return {'error': 'login required'}, 403
+    import shlex, subprocess
+    data = request.get_json() or {}
+    cmd = (data.get('cmd') or '').strip()
+    if not cmd:
+        return {'error': 'no command provided'}, 400
+    # whitelist of allowed base commands
+    allowed = {'ls', 'pwd', 'whoami', 'echo', 'uname', 'uptime', 'date'}
+    try:
+        parts = shlex.split(cmd)
+    except Exception as e:
+        return {'error': 'invalid command format: ' + str(e)}, 400
+    if not parts:
+        return {'error': 'no command provided'}, 400
+    base = parts[0]
+    if base not in allowed:
+        return {'error': f'command "{base}" not allowed'}, 403
+    # force to not use shell and run with a timeout
+    try:
+        proc = subprocess.run(parts, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=8, text=True)
+        return {'stdout': proc.stdout, 'stderr': proc.stderr, 'returncode': proc.returncode}
+    except subprocess.TimeoutExpired:
+        return {'error': 'command timed out'}, 500
+    except Exception as e:
+        return {'error': str(e)}, 500
 
 
 @main.route('/api/generate', methods=['POST'])
@@ -844,6 +893,43 @@ def api_generate_email():
         from models.ai_model import chat as ai_chat
         body = ai_chat(prompt, model='mock')
         return {'to': to, 'subject': subject, 'body': body}
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+@main.route('/api/create-token', methods=['POST'])
+def api_create_token():
+    # Create an API token and return the plain token in JSON (shown once)
+    if not _require_login():
+        return {'error': 'login required'}, 403
+    data = request.get_json() or {}
+    name = data.get('name') or data.get('label') or 'token'
+    import secrets
+    token_plain = secrets.token_urlsafe(32)
+    user_id = session.get('user_id')
+    try:
+        from dbkamp.db import create_api_token
+        create_api_token(user_id, name, token_plain)
+        return {'token': token_plain, 'name': name}
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+@main.route('/api/revoke-token', methods=['POST'])
+def api_revoke_token():
+    if not _require_login():
+        return {'error': 'login required'}, 403
+    data = request.get_json() or {}
+    token_id = data.get('token_id')
+    if not token_id:
+        return {'error': 'token_id required'}, 400
+    user_id = session.get('user_id')
+    try:
+        from dbkamp.db import revoke_api_token
+        ok = revoke_api_token(int(token_id), user_id)
+        if ok:
+            return {'ok': True}
+        return {'error': 'unable to revoke'}, 400
     except Exception as e:
         return {'error': str(e)}, 500
 

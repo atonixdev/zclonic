@@ -137,11 +137,12 @@
         </div>
     </footer>
 
-    <!-- Chat widget -->
+    <!-- Chat widget: show only for authenticated users -->
+    {% if session.get('user_id') %}
     <div id="ai-chat" class="ai-chat" aria-hidden="true">
-        <button class="ai-chat-toggle" aria-label="Open chat">💬</button>
+        <button class="ai-chat-toggle" aria-label="Open chat">4ac</button>
         <div class="ai-chat-panel" role="dialog" aria-label="AI chat">
-            <div class="ai-chat-header">AI Assistant <button class="ai-chat-close" aria-label="Close chat">×</button></div>
+            <div class="ai-chat-header">AI Assistant <button class="ai-chat-close" aria-label="Close chat"> d7</button></div>
             <div class="ai-chat-body" id="ai-chat-body"></div>
             <form class="ai-chat-form" id="ai-chat-form">
                 <input id="ai-input" name="q" placeholder="Ask anything..." autocomplete="off">
@@ -149,6 +150,7 @@
             </form>
         </div>
     </div>
+    {% endif %}
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
