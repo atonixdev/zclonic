@@ -10,3 +10,19 @@ pytest
 beautifulsoup4
 lxml
 pytest-cov
+gunicorn
+Flask-Login
+Flask-WTF
+Flask-Migrate
+Flask-Bcrypt
+Flask-Babel
+Flask-Cors
+python-dotenv
+openai
+alembic
+marshmallow
+python-magic
+# Dev / linting tools
+black
+isort
+flake8

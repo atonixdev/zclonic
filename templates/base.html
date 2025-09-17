@@ -1,8 +1,11 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
+    <head>
     <meta charset="UTF-8">
+    <!-- favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}" type="image/svg+xml">
+    <!-- Management: From ingestion to insight, Zclonic helps enterprises -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Research AI Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,14 +15,19 @@
 </head>
 <body>
     <header class="site-header" role="banner">
-        <div class="container header-inner">
-            <div class="logo">xclony</div>
+
+    <div class="container full-width header-inner">
 
             <button class="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Toggle navigation">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
+
+            <a class="logo" href="{{ url_for('main.dashboard') }}" aria-label="Zclonic home">
+                <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Zclonic logo">
+                <span class="brand">Zclonic</span>
+            </a>
 
             <nav id="primary-navigation" class="primary-nav" role="navigation" aria-label="Primary">
                 <ul class="nav-list">
@@ -37,6 +45,15 @@
                 </form>
 
                 <ul class="nav-actions">
+                    <li>
+                        <button class="theme-toggle" aria-pressed="false" title="Toggle theme">🌙</button>
+                    </li>
+                    <li>
+                        <select class="lang-select" aria-label="Select language">
+                            <option value="en">EN</option>
+                            <option value="es">ES</option>
+                        </select>
+                    </li>
                     {% if session.get('user_id') %}
                         <li class="muted">{{ session.get('user_email') }}</li>
                         <li><a href="{{ url_for('main.dashboard') }}" class="link-muted">Dashboard</a></li>
@@ -47,15 +64,16 @@
                     {% endif %}
                 </ul>
             </nav>
+            <!-- logo moved to the left side -->
         </div>
     </header>
 
         <!-- Hero -->
         <section class="hero">
-            <div class="container">
-                <span class="kicker">Enterprise</span>
-                <h1>Welcome to Zclonic by AtonixCorp</h1>
-                <p class="lead">AI-Powered Infrastructure for the Enterprise Frontier</p>
+            <div class="container full-width">
+                <span class="kicker" data-i18n="kicker">Enterprise</span>
+                <h1 data-i18n="hero_title">Welcome to Zclonic by AtonixCorp</h1>
+                <p class="lead" data-i18n="hero_lead">AI-Powered Infrastructure for the Enterprise Frontier</p>
                 <p>Zclonic is your multi-purpose command center—built for enterprises that demand autonomy, resilience, and scale. Whether you're managing sensitive data, deploying secure APIs, or orchestrating IT operations across borders, our platform delivers uncompromising performance and control.</p>
 
                 <div class="hero-grid">
@@ -85,8 +103,8 @@
             </div>
         </section>
 
-        <main class="site-main">
-                <div class="container">
+    <main class="site-main">
+        <div class="container full-width">
                         {% block content %}{% endblock %}
                 </div>
         </main>

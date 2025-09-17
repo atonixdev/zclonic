@@ -12,6 +12,73 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
+  // Theme toggle
+  const themeBtn = document.querySelector('.theme-toggle');
+  const root = document.documentElement;
+  function setTheme(t){
+    if(t === 'light'){
+      document.body.classList.add('theme-light');
+      themeBtn && (themeBtn.textContent = '☀️');
+      themeBtn && themeBtn.setAttribute('aria-pressed','true');
+    } else {
+      document.body.classList.remove('theme-light');
+      themeBtn && (themeBtn.textContent = '🌙');
+      themeBtn && themeBtn.setAttribute('aria-pressed','false');
+    }
+    try{ localStorage.setItem('theme', t); }catch(e){}
+  }
+
+  // initialize
+  try{
+    const stored = localStorage.getItem('theme');
+    setTheme(stored === 'light' ? 'light' : 'dark');
+  }catch(e){ setTheme('dark') }
+
+  if(themeBtn){
+    themeBtn.addEventListener('click', function(){
+      const isLight = document.body.classList.contains('theme-light');
+      setTheme(isLight ? 'dark' : 'light');
+    });
+  }
+
+  // Translation loader
+  const langSelect = document.querySelector('.lang-select');
+  async function loadLocale(lang){
+    try{
+      const res = await fetch('/static/locales/' + lang + '.json');
+      const data = await res.json();
+      applyTranslations(data);
+      try{ localStorage.setItem('lang', lang); }catch(e){}
+    }catch(e){ console.warn('Failed to load locale', e) }
+  }
+
+  function applyTranslations(dict){
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      const key = el.getAttribute('data-i18n');
+      if(dict[key]) el.textContent = dict[key];
+    });
+    // buttons/links by class
+    const btnPrimary = document.querySelector('.btn-primary');
+    const btnSecondary = document.querySelector('.btn-secondary');
+    const uploadBtn = document.querySelector('.cta-group .btn');
+    if(btnPrimary && dict['get_started']) btnPrimary.textContent = dict['get_started'];
+    if(btnSecondary && dict['learn_more']) btnSecondary.textContent = dict['learn_more'];
+    if(uploadBtn && dict['upload_data']) uploadBtn.textContent = dict['upload_data'];
+  }
+
+  // Initialize language
+  try{
+    const storedLang = localStorage.getItem('lang') || 'en';
+    if(langSelect) langSelect.value = storedLang;
+    loadLocale(storedLang);
+  }catch(e){ loadLocale('en') }
+
+  if(langSelect){
+    langSelect.addEventListener('change', function(e){
+      loadLocale(e.target.value);
+    });
+  }
+
   // Chat widget
   const chat = document.getElementById('ai-chat');
   const chatToggle = document.querySelector('.ai-chat-toggle');
@@ -30,8 +97,13 @@ document.addEventListener('DOMContentLoaded', function(){
 
   if(chatToggle && chat){
     chatToggle.addEventListener('click', function(){
+      const opening = !chat.classList.contains('open');
       chat.classList.toggle('open');
       chat.setAttribute('aria-hidden', chat.classList.contains('open') ? 'false' : 'true');
+      if(opening){
+        chat.classList.add('pop');
+        setTimeout(()=>chat.classList.remove('pop'), 800);
+      }
     });
   }
 

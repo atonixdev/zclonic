@@ -14,6 +14,19 @@
     --radius:10px;
 }
 
+/* Light theme overrides */
+body.theme-light{
+    --bg:#f7fafc;
+    --panel:#ffffff;
+    --muted:#475569;
+    --accent:#5b21b6;
+    --accent-2:#059669;
+    --surface:#ffffff;
+    --card:#ffffff;
+    --text:#0f1724;
+    --glass: rgba(15,23,36,0.04);
+}
+
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -33,23 +46,50 @@ body{
     padding:0 1rem;
 }
 
+/* Full-width sections that ignore the page max width */
+.container.full-width{max-width:100%;padding:0 2rem}
+
 /* Header */
 .site-header{
     background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
     border-bottom: 1px solid rgba(255,255,255,0.04);
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    backdrop-filter: blur(6px);
 }
 .header-inner{
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:1rem;
-    padding:1.125rem 0;
+    padding:1.125rem 1rem; /* horizontal padding matches .container */
 }
 .logo{
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    margin-left:1rem;
     font-weight:800;
     letter-spacing:0.6px;
-    font-size:1.125rem;
+    font-size:0.95rem;
     color:var(--text);
+    text-decoration:none;
+}
+
+.logo img{width:40px;height:40px;border-radius:8px;display:block}
+.logo .brand{font-weight:800;color:var(--text)}
+
+/* Header layout - logo sits left and nav fills remaining space */
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.header-inner > .logo{margin-left:0}
+.logo{order:0;margin-right:1rem}
+
+/* Mobile: hide brand text to keep header compact */
+@media (max-width:900px){
+    .logo .brand{display:none}
+    .logo img{width:36px;height:36px}
+    .logo{margin-right:0}
 }
 
 .nav-toggle{
@@ -59,7 +99,10 @@ body{
     color:var(--text);
 }
 
-.primary-nav{display:flex;align-items:center;gap:1.25rem}
+.theme-toggle{background:transparent;border:0;color:var(--text);padding:0.4rem;border-radius:6px;cursor:pointer}
+.theme-toggle:focus{outline:2px solid rgba(124,92,255,0.14);outline-offset:2px}
+
+.primary-nav{display:flex;align-items:center;gap:1.25rem;flex:1}
 .nav-list{display:flex;gap:1.5rem;margin:0;padding:0;list-style:none}
 .nav-list a{color:var(--muted);text-decoration:none;font-weight:600;padding:0.35rem 0;display:inline-block;border-radius:6px}
 .nav-list a:hover{color:var(--text);background:var(--glass)}
@@ -80,7 +123,7 @@ body{
 .nav-search input::placeholder{color:var(--muted)}
 
 /* Main */
-.site-main{padding:3rem 0}
+.site-main{padding:3.5rem 0}
 .site-main .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:1.5rem;border:1px solid rgba(255,255,255,0.03)}
 
 /* Hero */
@@ -127,6 +170,14 @@ body{
 .ai-chat-form{display:flex;gap:0.5rem;padding:0.5rem}
 .ai-chat-form input{flex:1;padding:0.5rem;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
 .ai-chat-form button{padding:0.45rem 0.7rem;border-radius:8px;border:0;background:var(--accent);color:white}
+
+/* Chat pop animation */
+.ai-chat.pop .ai-chat-toggle{animation:chat-pop 380ms cubic-bezier(.2,1,.2,1)}
+@keyframes chat-pop{
+    0%{transform:scale(0.85)}
+    60%{transform:scale(1.08)}
+    100%{transform:scale(1)}
+}
 
 /* Form styles */
 .form-stacked label{display:block;margin-top:0.75rem;font-weight:600;color:var(--text)}
