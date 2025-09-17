@@ -795,6 +795,59 @@ def api_tts():
         return {'error': 'TTS failed: ' + str(e)}, 500
 
 
+@main.route('/api/employee', methods=['POST'])
+def api_create_employee():
+    data = request.get_json() or {}
+    email = data.get('email')
+    full_name = data.get('full_name')
+    role = data.get('role')
+    if not email:
+        return {'error': 'email required'}, 400
+    from dbkamp.db import create_employee
+    eid = create_employee(email, full_name, role)
+    return {'employee_id': eid}
+
+
+@main.route('/api/activity', methods=['POST'])
+def api_record_activity():
+    data = request.get_json() or {}
+    employee_id = data.get('employee_id')
+    event_type = data.get('event_type')
+    details = data.get('details')
+    if not employee_id or not event_type:
+        return {'error': 'employee_id and event_type required'}, 400
+    from dbkamp.db import record_activity
+    record_activity(employee_id, event_type, details)
+    return {'ok': True}
+
+
+@main.route('/api/activities')
+def api_list_activities():
+    emp = request.args.get('employee_id')
+    from dbkamp.db import list_activities
+    rows = list_activities(int(emp) if emp else None)
+    return {'activities': rows}
+
+
+@main.route('/api/generate-email', methods=['POST'])
+def api_generate_email():
+    data = request.get_json() or {}
+    to = data.get('to')
+    subject = data.get('subject') or 'A message from our team'
+    context = data.get('context') or ''
+    tone = data.get('tone') or 'professional'
+    if not to:
+        return {'error': 'recipient (to) is required'}, 400
+    # Build a prompt for the AI chat/generator
+    prompt = f"Write a {tone} email to {to}. Subject: {subject}. Context: {context}\n\nEmail:" 
+    try:
+        from models.ai_model import chat as ai_chat
+        body = ai_chat(prompt, model='mock')
+        return {'to': to, 'subject': subject, 'body': body}
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
 @main.route('/logout')
 def logout():
     session.pop('user_id', None)

@@ -55,6 +55,8 @@ def init_db():
     ensure_projects_tables()
     ensure_environments_table()
     ensure_audit_table()
+    # employees and activity logs
+    ensure_employees_table()
 
 
 def ensure_api_tokens_table():
@@ -216,6 +218,31 @@ def ensure_audit_table():
     conn.close()
 
 
+def ensure_employees_table():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS employees (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        full_name TEXT,
+        role TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employee_id INTEGER,
+        event_type TEXT NOT NULL,
+        details TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    conn.commit()
+    conn.close()
+
+
 def create_environment(project_id: int, name: str, target: str = None):
     conn = get_connection()
     cur = conn.cursor()
@@ -273,6 +300,59 @@ def list_audit_logs(limit: int = 200):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute('SELECT id, event_type, actor_user_id, details, ip, created_at FROM audit_logs ORDER BY created_at DESC LIMIT ?', (limit,))
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def create_employee(email: str, full_name: str = None, role: str = None):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute('INSERT INTO employees (email, full_name, role) VALUES (?, ?, ?)', (email, full_name, role))
+        conn.commit()
+        eid = cur.lastrowid
+    except sqlite3.IntegrityError:
+        # already exists: return existing id
+        cur.execute('SELECT id FROM employees WHERE email = ?', (email,))
+        row = cur.fetchone()
+        eid = row['id'] if row else None
+    conn.close()
+    try:
+        record_audit('employee.create', actor_user_id=None, details=f'employee={email}')
+    except Exception:
+        pass
+    return eid
+
+
+def get_employee(employee_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT id, email, full_name, role, created_at FROM employees WHERE id = ?', (employee_id,))
+    row = cur.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def record_activity(employee_id: int, event_type: str, details: str = None):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO activity_logs (employee_id, event_type, details) VALUES (?, ?, ?)', (employee_id, event_type, details))
+    conn.commit()
+    conn.close()
+    try:
+        record_audit('activity.record', actor_user_id=None, details=f'employee_id={employee_id}, event={event_type}')
+    except Exception:
+        pass
+
+
+def list_activities(employee_id: int = None, limit: int = 200):
+    conn = get_connection()
+    cur = conn.cursor()
+    if employee_id:
+        cur.execute('SELECT id, employee_id, event_type, details, created_at FROM activity_logs WHERE employee_id = ? ORDER BY created_at DESC LIMIT ?', (employee_id, limit))
+    else:
+        cur.execute('SELECT id, employee_id, event_type, details, created_at FROM activity_logs ORDER BY created_at DESC LIMIT ?', (limit,))
     rows = cur.fetchall()
     conn.close()
     return [dict(r) for r in rows]
