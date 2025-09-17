@@ -4,7 +4,193 @@
   <div class="card">
     <h1>Security</h1>
     <p class="muted">Security settings, access control, and audit logs.</p>
-    <p>This is a placeholder page for Security settings.</p>
+
+    <section aria-labelledby="sec-overview">
+      <h2 id="sec-overview">Overview</h2>
+      <p>
+        Manage your account and organization security settings from one place. Use the controls below to enforce
+        authentication policies, review and revoke active sessions, manage API keys and OAuth applications, and
+        inspect audit logs for important events.
+      </p>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-authentication">
+      <h2 id="sec-authentication">Authentication</h2>
+      <p class="muted">Password policy, multi-factor authentication (MFA), and SSO settings.</p>
+
+      <div class="form-grid">
+        <div>
+          <h3>Password policy</h3>
+          <p>
+            Enforce strong passwords across your organization. We recommend requiring a minimum length of 12
+            characters and enabling checks for common leaked passwords.
+          </p>
+          <form method="post" action="#">
+            <!-- Placeholder controls; wiring to server can be added later -->
+            <label>
+              Minimum password length
+              <input type="number" name="min_length" value="12" min="8" max="128" />
+            </label>
+            <label>
+              Require character classes
+              <select name="char_classes">
+                <option value="recommended">Recommended (upper, lower, digits, symbols)</option>
+                <option value="optional">Optional</option>
+              </select>
+            </label>
+            <button class="btn" disabled>Save (not wired)</button>
+          </form>
+        </div>
+
+        <div>
+          <h3>Multi-factor authentication (MFA)</h3>
+          <p>
+            Add an extra layer of security by requiring a second verification factor (TOTP, SMS, or hardware
+            security keys) when users sign in.
+          </p>
+          <ul>
+            <li>TOTP (Authenticator apps like Google Authenticator or Authy)</li>
+            <li>SMS (text messages) — note: less secure than TOTP</li>
+            <li>Hardware security keys (WebAuthn / U2F)</li>
+          </ul>
+          <div class="muted">Use the buttons below to enable per-account MFA or enforce organization-wide MFA.</div>
+          <div class="actions">
+            <button class="btn" disabled>Enable MFA for my account</button>
+            <button class="btn" disabled>Enforce MFA organization-wide</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-sessions">
+      <h2 id="sec-sessions">Session & Access Management</h2>
+      <p class="muted">View and revoke active sessions, and configure session timeouts and device policies.</p>
+      <div>
+        <h3>Active sessions</h3>
+        <p class="muted">Signed-in devices and recent sessions (last 30 days).</p>
+        <table class="table">
+          <thead>
+            <tr><th>Device</th><th>Location</th><th>IP</th><th>Started</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Browser — Chrome on Linux</td><td>Unknown</td><td>192.0.2.1</td><td>Today, 10:12 UTC</td><td><button class="btn" disabled>Revoke</button></td></tr>
+            <tr><td>Mobile — iOS</td><td>San Francisco, CA</td><td>198.51.100.23</td><td>Sep 1, 2025</td><td><button class="btn" disabled>Revoke</button></td></tr>
+          </tbody>
+        </table>
+        <div class="muted">Tip: Revoke any sessions you don't recognize immediately.</div>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h3>Session timeout</h3>
+        <p>Configure how long sessions remain valid before requiring re-authentication.</p>
+        <form method="post" action="#">
+          <label>
+            Inactivity timeout (minutes)
+            <input type="number" name="timeout" value="60" min="5" max="43200" />
+          </label>
+          <button class="btn" disabled>Save (not wired)</button>
+        </form>
+      </div>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-api">
+      <h2 id="sec-api">API Keys & OAuth Applications</h2>
+      <p class="muted">Manage API tokens and connected third-party applications.</p>
+      <div>
+        <h3>API tokens</h3>
+        <p>API tokens grant programmatic access. Treat them like passwords — store them securely and rotate regularly.</p>
+        <ul>
+          <li>Create scoped tokens for automation and CI.</li>
+          <li>Rotate tokens periodically and revoke unused tokens.</li>
+        </ul>
+        <div class="actions"><button class="btn" disabled>Create token</button></div>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <h3>OAuth applications</h3>
+        <p>Review and revoke third-party applications that have access to your account data.</p>
+        <table class="table">
+          <thead><tr><th>Application</th><th>Scope</th><th>Connected</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td>Example App</td><td>read:user, repo</td><td>Aug 10, 2025</td><td><button class="btn" disabled>Revoke</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-access">
+      <h2 id="sec-access">Access Control & Roles</h2>
+      <p class="muted">Control who can view and modify resources in your organization.</p>
+      <ul>
+        <li>Role-based access control (RBAC): assign roles like Admin, Maintainer, and Viewer to users and groups.</li>
+        <li>Least privilege: grant only the permissions necessary for a user to perform their job.</li>
+        <li>Audit membership and role changes regularly.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-audit">
+      <h2 id="sec-audit">Audit Logs & Monitoring</h2>
+      <p class="muted">Search and export audit logs for security reviews and incident investigations.</p>
+      <p>
+        Audit logs include sign-ins, failed login attempts, token creation/revocation, role changes, and configuration updates.
+        Use filters by date, actor, or event type to find relevant entries.
+      </p>
+      <div class="actions">
+        <button class="btn" disabled>Download recent logs (CSV)</button>
+        <button class="btn" disabled>Open audit viewer</button>
+      </div>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-encryption">
+      <h2 id="sec-encryption">Encryption & Data Handling</h2>
+      <p class="muted">How we protect your data at rest and in transit.</p>
+      <ul>
+        <li>TLS 1.2+ is enforced for all network traffic.</li>
+        <li>Data at rest is encrypted using AES-256 (where applicable).</li>
+        <li>Secrets and API tokens are stored hashed or encrypted; access is limited by role.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-incident">
+      <h2 id="sec-incident">Incident Response & Reporting</h2>
+      <p class="muted">Report suspicious activity and learn how incidents are handled.</p>
+      <p>
+        If you suspect your account has been compromised, immediately revoke active sessions and API tokens, change
+        your password, and contact our security team at <a href="mailto:security@example.com">security@example.com</a>.
+      </p>
+      <div class="actions">
+        <button class="btn" disabled>Report an incident</button>
+      </div>
+    </section>
+
+    <hr />
+
+    <section aria-labelledby="sec-actions">
+      <h2 id="sec-actions">Quick actions</h2>
+      <ul>
+        <li><button class="btn" disabled>Change password</button></li>
+        <li><button class="btn" disabled>Enable MFA</button></li>
+        <li><button class="btn" disabled>Revoke all sessions</button></li>
+        <li><button class="btn" disabled>Rotate all API keys</button></li>
+      </ul>
+    </section>
+
+    <p class="muted small">This page provides guidance and controls for security-related settings. Where controls are marked
+    "not wired" or disabled, they serve as a UI blueprint and require backend wiring to take effect.</p>
   </div>
 </div>
 {% endblock %}
